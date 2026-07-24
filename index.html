@@ -218,11 +218,45 @@
             font-style: italic;
         }
 
+        /* Mobile Header & Hamburger */
+        #mobile-header {
+            display: none;
+            background-color: var(--sidebar-bg);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
+            z-index: 200;
+        }
+        #mobile-header h2 { margin: 0; font-size: 1.1rem; color: var(--accent); }
+        .menu-btn { background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; }
+
         /* Responsive */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
-            #sidebar { width: 100%; height: 300px; border-right: none; border-bottom: 1px solid var(--border-color); }
-            #content-container { padding: 30px 20px; }
+            body { display: block; overflow: auto; height: auto; margin-top: 60px; }
+            #mobile-header { display: flex; }
+            #sidebar { 
+                position: fixed; 
+                top: 0; 
+                left: -300px; 
+                width: 280px; 
+                height: 100vh; 
+                z-index: 100; 
+                transition: left 0.3s ease; 
+                border-right: 1px solid var(--border-color); 
+            }
+            #sidebar.open { left: 0; }
+            #main-wrapper { overflow: visible; display: block; height: auto; }
+            #content-container { padding: 20px 15px; }
+            
+            h1 { font-size: 1.8rem; margin-top: 1em; }
+            h2 { font-size: 1.4rem; }
+            pre { padding: 12px; font-size: 0.85em; }
         }
         
         /* Scrollbar */
@@ -233,6 +267,10 @@
     </style>
 </head>
 <body>
+    <div id="mobile-header">
+        <h2>🛡️ AppSec Guide</h2>
+        <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+    </div>
 
     <div id="sidebar">
         <div id="sidebar-header">
@@ -249,17 +287,17 @@
     <textarea id="raw-markdown" style="display: none;">
 <a id="section-00_index"></a>
 # 🛡️ The Complete Application Security Learning Guide
-**Zero to Job-Ready in 16 Weeks | Entry-Level AppSec Engineer & Pentester**
+**Zero to Job-Ready in 18 Weeks | Entry-Level AppSec Engineer & Pentester**
 
 Welcome to the ultimate Application Security study guide! This guide is meticulously crafted for freshers and entry-level professionals targeting AppSec and Penetration Testing roles, especially at top Indian tech companies (like Flipkart, Razorpay, CRED, and HSBC). If you have zero security knowledge but basic programming understanding, you are in the right place.
 
 ## 📊 Quick Stats
-- **Duration:** 16 Weeks
+- **Duration:** 18 Weeks
 - **Cost:** Uses 100% Free & Open-Source Resources
 - **Level:** Absolute Beginner to Job-Ready
 - **Focus:** Deep technical understanding + Practical labs + Interview readiness
 
-## 🗺️ 16-Week Curriculum Roadmap
+## 🗺️ 18-Week Curriculum Roadmap
 
 | Week | Focus Area | Theory Hours | Lab Hours | Key Deliverable |
 | :--- | :--- | :--- | :--- | :--- |
@@ -270,6 +308,7 @@ Welcome to the ultimate Application Security study guide! This guide is meticulo
 | **11-12**| Android Application Security | 15 hrs | 15 hrs | Reverse engineering basic APKs, analyzing Android components |
 | **13-14**| SAST and SCA | 10 hrs | 10 hrs | Running Semgrep, finding and mitigating vulnerable dependencies |
 | **15-16**| DevSecOps Practices | 10 hrs | 10 hrs | Basic GitHub Actions CI/CD pipeline integration with security tools |
+| **17-18**| Advanced Topics & Cloud Security | 15 hrs | 10 hrs | AWS IAM/SSRF, Threat Modeling (STRIDE), Business Logic (Race Conditions), Advanced Auth |
 
 ## 📑 Table of Contents
 
@@ -283,7 +322,8 @@ Navigate through the individual modules below:
 - 🔍 [06: SAST and SCA](#section-06_sast_sca) — (Weeks 13-14)
 - 🚀 [07: DevSecOps Practices](#section-07_devsecops) — (Weeks 15-16)
 - 🎤 [08: Interview Preparation & Company Patterns](#section-08_interview_prep)
-- ✅ [09: Post-Course Readiness Checklist & Resources](09_readiness_checklist.md)
+- ✅ [09: Post-Course Readiness Checklist & Resources](#section-09_readiness_checklist)
+- ☁️ [10: Advanced Topics & Cloud Security](#section-10_advanced_topics) — (Weeks 17-18)
 
 ## 💡 How to Use This Guide
 
@@ -291,7 +331,7 @@ Navigate through the individual modules below:
 2. **Do the Labs:** Theory alone won't pass an interview. Spend ample time on the recommended practical labs.
 3. **Study the Interview Q&As:** Each module contains interview questions drawn from real AppSec interviews at major tech firms. Deeply review and understand them.
 4. **Take Notes:** Import these markdown files into Notion, highlight sections, and add your own lab walkthrough notes directly into the documents.
-5. **Consistency is Key:** Dedicate regular hours each week to stay on track for the 16-week timeline.
+5. **Consistency is Key:** Dedicate regular hours each week to stay on track for the 18-week timeline.
 
 
 ---
@@ -347,6 +387,7 @@ While all three are crucial, **Availability** is often the most critical in real
 </details>
 
 ---
+
 
 ## 2. Authentication vs. Authorization vs. Accounting (AAA) 🔑
 
@@ -438,6 +479,7 @@ Defense in Depth means applying multiple layers of security so a single failure 
 
 ---
 
+
 ## 4. Cryptography Essentials 🔐
 
 Cryptography is math used to secure communication. Let's break it down simply.
@@ -514,6 +556,7 @@ JWTs don't actually use *encryption* by default; they use *digital signatures* f
 
 ---
 
+
 ## 5. Networking for Security 🌐
 
 You cannot hack or secure what you don't understand. The internet runs on layers.
@@ -584,146 +627,106 @@ The core of Nmap is written in **C and C++**. However, the Nmap Scripting Engine
 
 ---
 
-## 6. Same-Origin Policy (SOP) 🚧 — DEEP DIVE
-
-The Same-Origin Policy is the fundamental security model of the modern web browser. Without it, the internet would be a wildly dangerous place.
-
-### What is an Origin?
-An origin is strictly defined by three things combined:
-1.  **Scheme (Protocol):** `http` or `https`
-2.  **Domain (Host):** `www.example.com`
-3.  **Port:** `80` (default for http) or `443` (default for https)
-
-**ALL THREE MUST MATCH EXACTLY** to be considered the "same origin".
-
-**Examples comparing to `https://shop.com` (Port 443):**
-*   `https://shop.com/page2` ➡️ **SAME** (Only path changed)
-*   `http://shop.com` ➡️ **DIFFERENT** (Scheme changed to http)
-*   `https://api.shop.com` ➡️ **DIFFERENT** (Domain changed - subdomain is different!)
-*   `https://shop.com:8080` ➡️ **DIFFERENT** (Port changed)
-
-### The Locked Fence Analogy
-Imagine every website you open in a tab is a house surrounded by a locked chain-link fence (SOP). 
-Inside the house is private data (Cookies, DOM, LocalStorage). 
-The SOP rule is: **Scripts running inside one house CANNOT reach through the fence to read data inside another house.**
-
-If you are logged into your bank (`bank.com`) in Tab A, and you visit a malicious site (`evil.com`) in Tab B. `evil.com` can run Javascript. Without SOP, `evil.com`'s Javascript could just say `fetch('https://bank.com/balance')` and read your balance, or read your bank cookies. SOP prevents this *reading*.
-
-### What SOP Blocks and DOESN'T Block
-This is crucial for interviews. SOP is actually quite permissive in specific ways.
-
-| Action from Origin A to Origin B | Allowed by SOP? | Example |
-| :--- | :--- | :--- |
-| **Read Data** (fetch, XHR, reading DOM) | ❌ **BLOCKED** | JS on `evil.com` reading response from `bank.com` |
-| **Embed Resources** (images, scripts) | ✅ **ALLOWED** | `&lt;img src="https://bank.com/logo.png"&gt;` or `&lt;script src="..."&gt;` |
-| **Send Data / Execute Actions** (Forms, Links) | ✅ **ALLOWED** | `&lt;form action="https://bank.com/transfer"&gt;` |
-
-**Wait, sending data is allowed?!**
-YES! SOP prevents *reading* the response, but it allows *sending* the request. This exact loophole is why **CSRF (Cross-Site Request Forgery)** exists!
-
-### SOP vs CSRF Comparison
-| Concept | Description |
-| :--- | :--- |
-| **SOP (Same-Origin Policy)** | A browser security mechanism that stops `evil.com` from **reading** data from `bank.com`. |
-| **CSRF (Cross-Site Request Forgery)** | An attack that exploits the fact that SOP allows `evil.com` to **send** requests to `bank.com` on behalf of the user. |
-
-### SOP vs CORS Comparison
-| Concept | Description |
-| :--- | :--- |
-| **SOP** | The strict rule: "Nobody can read across origins." |
-| **CORS (Cross-Origin Resource Sharing)** | The exception to the rule: "You can read across origins, BUT ONLY IF the target server explicitly says it's okay." |
-
-### Common Misunderstandings
-*   ❌ **Wrong:** SOP stops `evil.com` from sending a request to `bank.com`.
-*   ✅ **Correct:** SOP allows the request to be sent, but stops `evil.com` from reading the response.
-*   ❌ **Wrong:** SOP protects the server.
-*   ✅ **Correct:** SOP protects the *client (user)*. The server still receives the request and processes it.
 
 ---
 
-## 7. CORS (Cross-Origin Resource Sharing) 🔓 — DEEP DIVE
 
-If SOP is the locked fence, CORS is the VIP guest list that allows specific people through the gate.
+## 6. Same-Origin Policy (SOP) — DEEP TREATMENT
 
-### Why CORS Exists
-Modern web apps are separated. The frontend (React/Angular) might be hosted at `https://shop.com`. The backend API might be at `https://api.shop.com`.
-Because these are *different origins* (different subdomains), SOP will block the frontend from reading API responses! 
-CORS is the mechanism servers use to tell the browser: "It's okay, `shop.com` is allowed to read my data."
+### 🎯 What it is
+A **browser security mechanism** that restricts web pages from making requests to a different origin (domain, protocol, port) than the one that served the page, **and especially from reading the response**.
 
-### The Core Principle
-CORS relies entirely on **HTTP Headers**. The browser asks for permission, and the server grants it via headers.
+- **Origin** = `scheme` + `hostname` + `port`
+    - `https://example.com:443` and `https://example.com` → **same origin**
+    - `https://example.com` and `http://example.com` → **different origin** (different scheme)
+    - `https://example.com` and `https://api.example.com` → **different origin** (different subdomain)
 
-### CORS Flow: Simple vs Preflighted Requests
+### ⚙️ Why it matters (Goal)
+Protect sensitive data from being accessed by unauthorized scripts from another site.
 
-#### 1. Simple Requests
-If a request is "simple" (GET/POST with standard headers like `application/x-www-form-urlencoded`), the browser just sends it.
-*   **Request from browser:** `Origin: https://shop.com`
-*   **Response from server:** `Access-Control-Allow-Origin: https://shop.com`
-*   **Browser logic:** "The server allowed `shop.com`, and I am `shop.com`. I will let the Javascript read the response."
+### 🔍 Example in action
+- If you’re logged into `bank.com`, a malicious site `evil.com` **cannot** read your account balance from `bank.com` via JavaScript because of SOP.
 
-#### 2. Preflighted Requests (The `OPTIONS` request)
-If a request is complex (e.g., uses `Content-Type: application/json`, uses a `PUT`/`DELETE` method, or sends custom headers like `Authorization`), the browser gets scared. It won't send the real request yet. It sends a "Preflight" check first.
+### 🛡️ Analogy
+Think of **SOP** as a locked door in your house — no one can enter from outside by default.
 
-**Step A: The Preflight (Browser automatically sends this)**
-```http
-OPTIONS /api/data HTTP/1.1
-Host: api.shop.com
-Origin: https://shop.com
-Access-Control-Request-Method: PUT
-Access-Control-Request-Headers: Content-Type, Authorization
-```
-**Step B: The Server's Blessing**
-```http
-HTTP/1.1 204 No Content
-Access-Control-Allow-Origin: https://shop.com
-Access-Control-Allow-Methods: GET, POST, PUT
-Access-Control-Allow-Headers: Content-Type, Authorization
-Access-Control-Max-Age: 86400  # Cache this permission for 24 hours
-```
-**Step C: The Real Request**
-Only after getting the blessing does the browser send the actual `PUT` request with the JSON payload.
+### 📊 Key Difference: SOP vs CSRF
+| Feature | Same-Origin Policy (SOP) | Cross-Site Request Forgery (CSRF) |
+| --- | --- | --- |
+| **Type** | Browser-enforced security rule | Web application vulnerability / attack |
+| **Purpose** | Restricts *reading* data across different origins | Tricks the browser into sending authenticated requests |
+| **Blocks?** | Reading from another origin | Not blocked — requests can still be sent |
+| **Who enforces?** | Browser | Must be mitigated by the application developer |
+| **Relation to cookies** | Still sends cookies on cross-origin requests | Exploits cookies being auto-sent without user consent |
+| **Mitigations** | Not applicable (SOP is the mitigation) | CSRF tokens, SameSite cookies, double-submit cookies |
 
-### Subdomain Handling Pattern
-Developers often struggle with subdomains.
-*   Frontend: `https://shop.com`
-*   Admin Panel: `https://console.shop.com`
-*   API: `https://api.shop.com`
-
-If the API needs to serve both, it cannot return multiple origins in a single header like `Access-Control-Allow-Origin: https://shop.com, https://console.shop.com`. The spec only allows ONE origin or `*`.
-**The Secure Pattern:** The server must read the incoming `Origin` header, check if it's in an allowed list in the backend code, and dynamically echo it back in the response.
-
-### All CORS Headers
-| Header | Who Sends It | Purpose |
-| :--- | :--- | :--- |
-| `Origin` | Browser | Tells the server who is asking. |
-| `Access-Control-Request-Method` | Browser (Preflight) | "I want to send a PUT request." |
-| `Access-Control-Allow-Origin` | Server | "I allow this specific origin (or * for everyone)." |
-| `Access-Control-Allow-Credentials` | Server | "I allow you to send cookies/auth tokens." (Must be `true`) |
-| `Access-Control-Expose-Headers` | Server | "The JS is allowed to read these custom response headers." |
-
-### Wildcard (*) Limitations and Danger
-You can set `Access-Control-Allow-Origin: *` to let any website read your API. This is fine for public weather APIs.
-**THE GOLDEN RULE:** You can **NEVER** use `*` alongside `Access-Control-Allow-Credentials: true`. The browser will hard-reject it. If you want to accept cookies cross-origin, you *must* specify the exact origin.
-
-### CORS Misconfigurations as Vulnerabilities
-If a backend developer is lazy and writes code that says: "Take whatever is in the `Origin` header and echo it back in the `Access-Control-Allow-Origin` header", they have created a massive vulnerability.
-Now `evil.com` can send a request, the server echoes `evil.com` back, and the browser lets `evil.com` read the victim's private data!
-
-<details>
-<summary>🎤 Interview Q: If we allow `shop.com` in CORS, is `console.shop.com` automatically allowed?</summary>
-
-**Model Answer:**
-**NO.** CORS checking via the `Access-Control-Allow-Origin` header requires an exact string match. `https://shop.com` is a completely different origin from `https://console.shop.com`. To allow both, the backend server must dynamically inspect the incoming `Origin` header against a whitelist and echo back the specific requested subdomain if it matches.
-</details>
-
-<details>
-<summary>🎤 Interview Q: What is the security impact of a server responding with `Access-Control-Allow-Origin: *` along with `Access-Control-Allow-Credentials: true`?</summary>
-
-**Model Answer:**
-This is a critical misconfiguration, but fortunately, modern web browsers will explicitly block this combination. The CORS specification states that if credentials (cookies, authorization headers) are allowed, the `Allow-Origin` header must specify an exact domain and cannot use the wildcard `*`. If a browser sees this combination, it will fail the CORS check and prevent the frontend Javascript from reading the response. However, if a developer tries to bypass this by dynamically reflecting *any* requested origin and setting credentials to true, that results in a severe data exposure vulnerability.
-</details>
+**In short:**
+- **SOP** = rule that stops malicious sites from *reading* your data across origins.
+- **CSRF** = tricking your browser into *sending* unwanted requests to a site where you’re logged in — **SOP does not prevent this** because it blocks reading, not sending.
 
 ---
+
+
+## 7. CORS (Cross-Origin Resource Sharing) — DEEP TREATMENT
+
+### 🎯 What it is
+A **protocol / mechanism** (using HTTP headers) that allows servers to explicitly tell browsers which origins are allowed to access their resources. It is essentially a **controlled relaxation of the Same-Origin Policy**.
+
+### ⚙️ Why it exists
+- **Problem:** SOP is too strict for modern web apps. Your JavaScript on `https://myapp.com` can’t read data from an API at `https://api.partner.com` even if both sites want it.
+- **Solution:** CORS gives the server a way to tell the browser: *“It’s okay to share this data with pages from this origin.”*
+
+### 🛠️ How It Works (Step-by-Step)
+CORS behavior depends on the **type of request**:
+
+#### A. Simple Requests
+These are allowed *without* a preflight request if they meet all conditions:
+- Methods: `GET`, `HEAD`, or `POST`
+- Headers: Only "simple" ones (`Accept`, `Accept-Language`, `Content-Language`, `Content-Type` with certain values)
+
+**Flow:**
+1. Browser sends request to server.
+2. Server responds with data **plus** a header like: `Access-Control-Allow-Origin: https://myapp.com`
+3. If the header matches the requesting origin, browser allows JS to read the response. If not, browser blocks JS from reading it.
+
+#### B. Preflighted Requests
+When requests are **not simple** (e.g., `PUT`, `DELETE`, custom headers):
+1. **Preflight OPTIONS request** is sent by the browser.
+2. Server responds with allowed methods/headers.
+3. If allowed, browser sends the **actual request**. If not allowed, browser blocks the request before it’s sent.
+
+#### C. Credentialed Requests (Cookies, HTTP Auth)
+By default, CORS requests **do not send cookies**. To allow them:
+- Client sets: `fetch('url', { credentials: 'include' })`
+- Server responds with: `Access-Control-Allow-Credentials: true`
+⚠️ **Note:** Cannot use `Access-Control-Allow-Origin: *` with credentials.
+
+### 🛡️ Analogy
+If **SOP** is the locked door, **CORS** is you giving a **guest pass** to specific people you trust so they can enter.
+
+### 📊 Key Difference: SOP vs CORS
+| Feature | Same-Origin Policy (SOP) | Cross-Origin Resource Sharing (CORS) |
+| --- | --- | --- |
+| **Nature** | Security restriction | Permission mechanism |
+| **Who defines it?** | Browser spec | HTTP protocol extension |
+| **Who enforces it?** | Browser | Browser (using server’s CORS headers) |
+| **Default** | Block cross-origin reads | Allow if server says so |
+| **Purpose** | Protect data | Share data safely |
+
+### 🚨 Common Misunderstandings
+- ❌ *"CORS stops hackers from sending requests to my API"* — No, it only stops browsers from reading responses unless allowed.
+- ❌ *"If I set `Access-Control-Allow-Origin: *`, my API is safe"* — Not true, it means anyone can read your API responses from anywhere.
+- ❌ *"If we have allowed `shop.com` in CORS then `console.shop.com` is allowed by default"* — **No.** SOP treats every subdomain as a different origin. CORS is an exact string match.
+
+### 💡 Safe CORS Subdomain Handling Pattern
+To safely allow `shop.com` AND `*.shop.com`:
+1. Read the `Origin` header from the request.
+2. Parse it as a URL.
+3. Validate: `originHost === "shop.com"` OR `originHost.endsWith(".shop.com")`.
+4. **Return the exact matched origin string** in `Access-Control-Allow-Origin`.
+5. Include `Vary: Origin` so caches don’t mix responses.
+
+
 
 ## 8. Cookies Deep Dive 🍪
 
@@ -766,6 +769,7 @@ There are three primary ways to mitigate Cross-Site Request Forgery (CSRF):
 </details>
 
 ---
+
 
 ## 9. Sessions and Tokens 🎫
 
@@ -829,6 +833,7 @@ This is the most important tool in an AppSec engineer's arsenal. It is an Interc
 *End of Section 1.* Take your time to absorb these concepts. In Section 2, we will start actively exploiting vulnerabilities using these foundations!
 
 
+
 ---
 
 <a id="section-02_web_architecture"></a>
@@ -882,6 +887,7 @@ This architecture allows centralized data processing and storage (on servers) wh
 </details>
 
 ---
+
 
 ## 2. HTTP Protocol Deep Dive
 
@@ -972,6 +978,7 @@ Defense: Use HTTP/2 end-to-end, or configure frontend/backend to consistently re
 
 ---
 
+
 ## 3. Security Headers — COMPREHENSIVE
 
 Security headers are HTTP response headers that instruct the browser on how to behave securely.
@@ -1012,6 +1019,7 @@ I would prioritize the following:
 
 ---
 
+
 ## 4. Session Management Deep Dive
 
 ### What it is
@@ -1041,6 +1049,7 @@ Cookies are stored by the browser and automatically sent with requests to the ma
 5. Attacker uses their original `SID=123` and is now logged in as the Victim!
 
 ---
+
 
 ## 5. JWT (JSON Web Tokens) — DEEP TREATMENT
 
@@ -1254,6 +1263,7 @@ Companies use the OWASP Top 10 to structure their security programs, build secur
 
 ---
 
+
 ## 2. Cross-Site Scripting (XSS) — DEEPEST TREATMENT
 
 ### 🎯 What it is
@@ -1436,6 +1446,7 @@ app.get('/greet', (req, res) => {
 - **DVWA (Damn Vulnerable Web App):** XSS sections
 
 ---
+
 ## 3. SQL Injection — DEEP TREATMENT
 
 ### 🎯 What it is
@@ -2342,6 +2353,7 @@ A false positive (FP) is when a tool flags a non-existent vulnerability.
 
 ---
 
+
 ## 2. Free SAST Tools — Hands-On
 
 ### Semgrep
@@ -3065,6 +3077,234 @@ If an application forcefully appends `.txt` to uploads (e.g., `shell.php` become
 
 ---
 
+<a id="section-09_readiness_checklist"></a>
+# 09: Post-Course Readiness Checklist & Resources
+
+Congratulations on reaching the end of the 16-week AppSec guide! Before you step into your first technical interview for an Application Security or Pentesting role, ensure you have deeply studied and practiced the following topics.
+
+---
+
+## 🎯 "Pdhne ke liye topics" (Topics you MUST read & master)
+
+This is your final checklist. If you can explain, identify, and exploit these 22 topics confidently, you are ready for interviews at top Indian product companies and MNCs.
+
+### Web Application Vulnerabilities
+- [ ] **LFI vs RFI** (Local File Inclusion vs Remote File Inclusion)
+- [ ] **Path Traversal** (Directory Traversal)
+- [ ] **SQL Injection & NoSQL Injection** (In-Band, Blind, Error-based, Second-Order)
+- [ ] **File Upload Bypasses** (Web shell uploads, null byte, double extensions, content sniffing bypasses)
+- [ ] **Insecure Deserialization** (Java, Python Pickle, PHP, Node.js)
+- [ ] **HTTP Request Smuggling** (CL.TE vs TE.CL)
+- [ ] **Prototype Pollution & Parameter Pollution**
+- [ ] **DOM XSS** (Sources and Sinks)
+- [ ] **OWASP Top 10** (2021 update and deeply understanding the shift in categories)
+
+### API & Authentication Security
+- [ ] **JWT and its test cases** (Algorithms used, `None` alg, RS256 vs HS256, JWK injection, PS/RSASSA-PSS strength)
+- [ ] **OAuth Flow** (Authorization Code, Implicit, Client Credentials - attacks and bypasses like CSRF on OAuth, redirect URI manipulation)
+- [ ] **Cookies Security Flags** (SameSite, HttpOnly, Secure)
+- [ ] **Double Submit Cookie** (How it mitigates CSRF and its limitations)
+- [ ] **Client-Side Encryption** (Implementation flows and how to bypass them using DOM inspection or JS overriding)
+
+### Mobile Security (Android)
+- [ ] **Insecure Storage** (`sharedpreferences.xml`, SQLite databases, internal/external storage risks)
+- [ ] **Android Components** (Activities, Services, Broadcast Receivers, Content Providers)
+- [ ] **Exported Activity Exploitation** (Insecure Intents, Intent spoofing)
+- [ ] **Insecure WebView** (JavaScript enabled, file schema access) & **Insecure Deep Links**
+- [ ] **SSL Pinning** (How it works, bypass techniques) & **Root Detection**
+- [ ] **Dynamic Instrumentation Tools** (Frida, Objection, Jailbreak/Rooting concepts)
+
+### Emerging Threats & Tooling
+- [ ] **OWASP Top 10 for LLM** (Prompt Injection, Insecure Output Handling, Training Data Poisoning)
+- [ ] **Nessus** (Scanning tool concepts for Vulnerability Assessment on servers/infrastructure)
+- [ ] **Metasploit** (Basic usage, modules, payloads, and handlers)
+
+---
+
+## 💡 Final Interview Advice
+- **Don't just know the payload; know the root cause.** Interviewers care more about *why* `<script>alert(1)</script>` works (lack of contextual output encoding) than the payload itself.
+- **Always discuss mitigation.** When asked about a vulnerability, finish your explanation by telling them exactly how to fix it in code.
+- **Understand the business impact.** SSRF isn't just "fetching an internal IP," it's potentially "stealing AWS metadata credentials leading to a total cloud compromise."
+
+
+---
+
+<a id="section-10_advanced_topics"></a>
+# Section 10: Advanced Topics & Cloud Security (Weeks 17-18)
+
+Welcome to the final frontier. This section covers the advanced, modern attacks that separate entry-level analysts from top-tier AppSec Engineers at product companies like Razorpay, CRED, Flipkart, and global MNCs. 
+
+---
+
+## 1. Cloud Security Basics for AppSec (AWS Focus)
+
+Modern applications are hosted in the cloud. As an AppSec engineer, you must understand how web vulnerabilities escalate into full cloud compromise. While we focus heavily on AWS (as it's dominant in the Indian startup ecosystem), the concepts apply to GCP and Azure as well.
+
+### 🎯 SSRF to Cloud Metadata Compromise
+**What it is:** When an application is vulnerable to Server-Side Request Forgery (SSRF), an attacker can force the server to make requests to internal IP addresses. In a cloud environment, the most dangerous IP is the **Instance Metadata Service (IMDS)** at `169.254.169.254`.
+
+- **AWS Context:** By hitting `http://169.254.169.254/latest/meta-data/iam/security-credentials/role-name`, the attacker can steal temporary AWS access keys associated with the EC2 instance.
+- **GCP/Azure Context:** Similar services exist (e.g., GCP requires a `Metadata-Flavor: Google` header, making basic SSRF harder to exploit).
+
+**Mitigation (AWS IMDSv2):** 
+AWS introduced IMDSv2, which requires the client to first fetch a session token via a `PUT` request with a specific header (`X-aws-ec2-metadata-token-ttl-seconds`). Since standard SSRF usually only controls `GET` requests and cannot inject custom headers, IMDSv2 effectively kills this attack vector.
+
+### 🪣 S3 Bucket Misconfigurations
+**What it is:** Amazon S3 (Simple Storage Service) buckets are often misconfigured to allow public read or write access.
+- **Public Read:** Leads to massive data leaks (PII, source code, backups).
+- **Public Write:** Attackers can overwrite files. If the bucket hosts JavaScript files for a website, an attacker can overwrite them to achieve **Stored XSS** across the entire application (Supply Chain Attack).
+- **Subdomain Takeover (Dangling DNS):** If a company points `assets.shop.com` to an S3 bucket (`shop-assets-123.s3.amazonaws.com`), but later deletes the bucket without removing the DNS record, an attacker can create a bucket with the exact same name and take over the subdomain.
+
+### 🔑 IAM Privilege Escalation
+**What it is:** Identity and Access Management (IAM) defines who can do what. If an application (or stolen token) has overly permissive policies (e.g., `iam:PutUserPolicy`), an attacker can grant themselves Admin access.
+
+<details>
+<summary><b>🎤 Interview Q: How would you prevent SSRF from escalating to a cloud compromise?</b></summary>
+<b>Answer:</b> 
+1. Enforce IMDSv2 across all AWS instances, which blocks simple GET-based SSRF by requiring a PUT token. 
+2. Apply the Principle of Least Privilege to the EC2 IAM role so even if keys are stolen, they cannot access sensitive data like S3 or databases.
+3. Use a strict egress firewall or proxy to prevent the server from connecting to `169.254.169.254`.
+</details>
+
+---
+
+
+## 2. Business Logic & Fintech Vulnerabilities
+
+For companies handling money, business logic flaws are often more critical than technical injection flaws.
+
+### 🏎️ Race Conditions (TOCTOU - Time of Check to Time of Use)
+**What it is:** A concurrency flaw where multiple requests hit the server at the exact same millisecond. The server checks a condition (e.g., "does the user have enough balance?") for all requests simultaneously *before* it updates the database for any of them.
+
+**Code-Level Example (Node.js/Python logic):**
+Imagine a user with ₹100 balance attempting to transfer ₹100. They use Burp Suite to send 5 requests at the exact same time.
+
+```javascript
+// ❌ VULNERABLE CODE (No locking)
+async function transferMoney(userId, amount) {
+    // Check: Database reads balance
+    const account = await db.query('SELECT balance FROM accounts WHERE id = ?', [userId]);
+    
+    if (account.balance >= amount) {
+        // Attackers send 5 requests simultaneously.
+        // ALL 5 requests hit this IF condition before the UPDATE happens!
+        
+        // Use: Database updates balance
+        const newBalance = account.balance - amount;
+        await db.query('UPDATE accounts SET balance = ? WHERE id = ?', [newBalance, userId]);
+        return "Transfer successful";
+    }
+    return "Insufficient funds";
+}
+```
+
+**Result:** The attacker transfers ₹500 even though they only had ₹100.
+
+**Mitigation (Database Locking):**
+Use Pessimistic Locking (e.g., `SELECT ... FOR UPDATE` in SQL) or Optimistic Locking (version columns).
+
+```javascript
+// ✅ SECURE CODE (Pessimistic Locking)
+async function transferMoney(userId, amount) {
+    // BEGIN TRANSACTION
+    // SELECT ... FOR UPDATE locks the row. Other concurrent requests must wait in a queue.
+    const account = await db.query('SELECT balance FROM accounts WHERE id = ? FOR UPDATE', [userId]);
+    
+    if (account.balance >= amount) {
+        const newBalance = account.balance - amount;
+        await db.query('UPDATE accounts SET balance = ? WHERE id = ?', [newBalance, userId]);
+        // COMMIT TRANSACTION (Row is unlocked)
+        return "Transfer successful";
+    }
+    return "Insufficient funds";
+}
+```
+
+### 💸 Parameter Tampering & Price Manipulation
+**What it is:** Attackers modify hidden fields or intercept traffic to change the price of an item or the quantity before checkout.
+- **Exploit:** Changing `price=100` to `price=1` in the POST request.
+- **Negative Values:** Sending `quantity=-1` to force the system to *refund* money instead of charging it.
+- **Mitigation:** Never trust the client for pricing. The server must recalculate the total cost based on the internal product database using the `product_id`.
+
+---
+
+
+## 3. Threat Modeling (The STRIDE Framework)
+
+Threat modeling is the process of identifying vulnerabilities during the **design phase**, before any code is written. 
+
+### 🛡️ The STRIDE Methodology
+Developed by Microsoft, STRIDE helps categorize threats:
+- **S**poofing (Impersonating something or someone) → Mitigate with AuthN.
+- **T**ampering (Modifying data in transit or at rest) → Mitigate with TLS, Hashing.
+- **R**epudiation (Claiming you didn't do something) → Mitigate with Logging/Auditing.
+- **I**nformation Disclosure (Data leaks) → Mitigate with Encryption.
+- **D**enial of Service (Crashing the system) → Mitigate with Rate Limiting.
+- **E**levation of Privilege (Gaining admin rights) → Mitigate with AuthZ/RBAC.
+
+### 🎤 Whiteboard Interview Scenario 1: Standard User Login Page
+*Interviewer: "Draw a standard login page architecture and threat model it."*
+
+1. **Spoofing:** Attacker uses credential stuffing. (Mitigation: MFA, Account Lockouts).
+2. **Tampering:** Attacker modifies the JWT in transit. (Mitigation: HTTPS, Strong JWT Signatures).
+3. **Repudiation:** User denies logging in from a foreign country. (Mitigation: Store IP/User-Agent logs securely).
+4. **Information Disclosure:** Server responds with "Username does not exist" revealing valid accounts. (Mitigation: Generic error messages).
+5. **Denial of Service:** Attacker brute-forces 100k requests to exhaust database connections. (Mitigation: Rate limiting, CAPTCHA).
+
+### 🎤 Whiteboard Interview Scenario 2: Fintech Payment Gateway
+*Interviewer: "Threat model the transaction flow of a payment gateway like Razorpay."*
+
+1. **Spoofing:** A malicious merchant spoofs a callback to the main app saying "Payment Successful". (Mitigation: Webhook signatures/HMAC validation).
+2. **Tampering:** User intercepts the `amount=500` parameter and changes it to `amount=1`. (Mitigation: Verify amounts server-side against the original cart ID).
+3. **Information Disclosure:** Payment API logs full credit card numbers in CloudWatch. (Mitigation: Data masking, Tokenization/PCI-DSS compliance).
+4. **Elevation of Privilege (Business Logic):** Race condition allowing double-withdrawal. (Mitigation: Database `FOR UPDATE` locks).
+
+---
+
+
+## 4. Advanced Authentication (SAML & SSO)
+
+While OAuth/OIDC are common for consumer apps (B2C), enterprise applications (B2B) rely heavily on SAML.
+
+### 📑 SAML (Security Assertion Markup Language)
+**What it is:** An XML-based standard for exchanging authentication data between an Identity Provider (IdP) like Okta/Azure AD, and a Service Provider (SP) like your web app.
+- **The Attack (XML Signature Wrapping - XSW):** SAML assertions are cryptographically signed. However, if the Service Provider's XML parser is flawed, an attacker can duplicate the assertion, alter the duplicated version (e.g., change `user@normal.com` to `admin@company.com`), and trick the parser into verifying the original signature but processing the malicious data.
+- **Mitigation:** Use established, well-vetted SAML libraries that enforce strict schema validation and reject duplicate assertion tags.
+
+### 🌐 OpenID Connect (OIDC) vs OAuth2
+- **OAuth2** is for **Authorization** (giving a third-party app access to your data, like "Sign in with Google to read my contacts"). It issues an Access Token.
+- **OIDC** sits on top of OAuth2 and adds **Authentication**. It issues an **ID Token** (usually a JWT) containing user identity information.
+
+---
+
+
+## 5. Vulnerability Triage & CVSS Scoring
+
+Finding a bug is only step one. Communicating its risk is step two.
+
+### 🧮 CVSS v3.1 (Common Vulnerability Scoring System)
+A framework for rating the severity of vulnerabilities from 0.0 to 10.0.
+1. **Attack Vector (AV):** Is it exploitable over the Network, Adjacent, Local, or Physical?
+2. **Attack Complexity (AC):** Is it Low (easy to exploit) or High (requires race conditions or specific setups)?
+3. **Privileges Required (PR):** None, Low, or High?
+4. **User Interaction (UI):** None or Required (e.g., XSS requires a user to click).
+5. **Scope (S):** Unchanged or Changed (e.g., escaping a sandbox)?
+6. **CIA Impact:** Confidentiality, Integrity, Availability (None, Low, High).
+
+*Example:* A Stored XSS that requires a victim to click a link (UI:R) and steals cookies (C:L, I:L, A:N) might score a 5.4 (Medium). An unauthenticated Remote Code Execution (AV:N, PR:N, C:H, I:H, A:H) is a 9.8-10.0 (Critical).
+
+### 📝 Writing a Good Pentest Report
+1. **Executive Summary:** For the CTO/Managers. Non-technical explanation of the business risk ("An attacker could steal all customer credit cards").
+2. **Technical Details:** For the Developers. 
+   - Vulnerability Name & Description.
+   - Exact Steps to Reproduce (PoC).
+   - HTTP Request/Response snippets.
+   - Recommended Fix (Code level).
+
+
+
+---
+
 
     </textarea>
 
@@ -3121,6 +3361,7 @@ If an application forcefully appends `.txt` to uploads (e.g., `shell.php` become
             // Smooth scroll for sidebar links
             a.addEventListener('click', function(e) {
                 e.preventDefault();
+                document.getElementById('sidebar').classList.remove('open');
                 document.getElementById(header.id).scrollIntoView({ behavior: 'smooth' });
             });
 
