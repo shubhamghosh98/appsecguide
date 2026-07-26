@@ -6,12 +6,11 @@
     <title>The Complete Application Security Guide</title>
     <meta name="description" content="Zero to Job-Ready in 18 Weeks. The ultimate AppSec study guide for freshers targeting top Indian tech companies.">
 
-    <!-- Marked.js for Markdown parsing -->
+    <!-- Syntax Highlighting & Parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <!-- Highlight.js for code syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5507,7 +5506,8 @@ This is your final checklist. If you can explain, identify, and exploit these 22
         const rawMarkdown = document.getElementById('raw-markdown').value;
         const htmlContent = marked.parse(rawMarkdown);
         const container = document.getElementById('content-container');
-        container.innerHTML = htmlContent;
+        const cleanHtml = DOMPurify.sanitize(htmlContent);
+        container.innerHTML = cleanHtml;
 
         // =================== EXTERNAL LINKS: OPEN IN NEW TAB ===================
         container.querySelectorAll('a').forEach(a => {
@@ -5747,42 +5747,66 @@ This is your final checklist. If you can explain, identify, and exploit these 22
 
         function navigateToSearchResult(idx, query) {
             closeSearchModal();
-            // Find matching text in the rendered content
             const result = searchResults[idx];
             if (!result) return;
 
-            // Search for the text in the document and scroll to it
-            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-            let node;
-            const searchText = result.t.substring(0, 60).toLowerCase();
-
-            while (node = walker.nextNode()) {
-                if (node.textContent.toLowerCase().includes(searchText)) {
-                    const parent = node.parentElement;
-                    if (parent) {
-                        // Expand any collapsed sections
-                        let el = parent;
-                        while (el && el !== container) {
-                            if (el.classList && el.classList.contains('collapsed')) {
-                                el.classList.remove('collapsed');
-                                const prevH2 = el.previousElementSibling;
-                                if (prevH2) prevH2.classList.remove('collapsed-heading');
-                            }
-                            el = el.parentElement;
-                        }
-
-                        parent.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        // Flash highlight effect
-                        parent.style.transition = 'background 0.3s ease';
-                        parent.style.background = 'var(--accent-glow)';
-                        parent.style.borderRadius = '6px';
-                        setTimeout(() => {
-                            parent.style.background = '';
-                            parent.style.borderRadius = '';
-                        }, 2000);
-                    }
+            const searchText = result.t.toLowerCase().trim();
+            
+            // 1. Try to find the exact paragraph/list-item/cell containing the text
+            const textElements = Array.from(container.querySelectorAll('p, li, td, th, blockquote, summary, div'));
+            let foundElement = null;
+            
+            // Find the best matching element (longest match wins to avoid matching parent divs too easily, 
+            // but we want the most specific element)
+            for (const el of textElements) {
+                if (el.textContent.toLowerCase().includes(searchText.substring(0, 40))) {
+                    foundElement = el;
                     break;
                 }
+            }
+
+            // 2. Fallback to Section/Subsection heading if exact text not found
+            if (!foundElement) {
+                const headingText = (result.ss || result.s || result.m).toLowerCase();
+                const headings = Array.from(container.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+                for (const h of headings) {
+                    if (h.textContent.toLowerCase().includes(headingText)) {
+                        foundElement = h;
+                        break;
+                    }
+                }
+            }
+
+            if (foundElement) {
+                // Expand any collapsed sections (for the new accordion design)
+                let el = foundElement;
+                while (el && el !== container) {
+                    if (el.classList && el.classList.contains('collapsed')) {
+                        el.classList.remove('collapsed');
+                        const prevH2 = el.previousElementSibling;
+                        if (prevH2) prevH2.classList.remove('collapsed-heading');
+                    }
+                    el = el.parentElement;
+                }
+
+                // Scroll to element
+                foundElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Flash highlight effect
+                const originalBg = foundElement.style.background;
+                const originalTransition = foundElement.style.transition;
+                
+                foundElement.style.transition = 'background 0.3s ease';
+                foundElement.style.background = 'var(--accent-glow)';
+                foundElement.style.borderRadius = '6px';
+                
+                setTimeout(() => {
+                    foundElement.style.background = originalBg;
+                    setTimeout(() => {
+                        foundElement.style.transition = originalTransition;
+                        foundElement.style.borderRadius = '';
+                    }, 300);
+                }, 2000);
             }
         }
 
